@@ -1,0 +1,36 @@
+{
+  "name": "goit-node-rest-api",
+  "version": "1.0.0",
+  "description": "REST API for managing a collection of contacts",
+  "keywords": [
+    "rest-api",
+    "contacts",
+    "nodejs",
+    "express"
+  ],
+  "homepage": "https://github.com/andriy-pro/goit-node-rest-api#readme",
+  "bugs": {
+    "url": "https://github.com/andriy-pro/goit-node-rest-api/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andriy-pro/goit-node-rest-api.git"
+  },
+  "license": "GPL-3.0",
+  "author": "Andriy Nechyporenko",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "start": "node ./app.js",
+    "dev": "nodemon ./app.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "joi": "^17.11.0",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

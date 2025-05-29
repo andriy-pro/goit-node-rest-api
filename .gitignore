@@ -111,9 +111,9 @@ logs/
 # ==========================================
 
 # AI Development Standard Files
-**/.cursorrules
-**/extra_specs.md
-**/task.md
+**/.cursorrules*
+**/extra_specs*
+**/task*
 
 # Archive files
 *.rar
