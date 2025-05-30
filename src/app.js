@@ -1,11 +1,11 @@
 /**
- * Головний файл Express.js застосунку
- * Налаштовує middleware, роути та обробку помилок
+ * Express.js застосунок - конфігурація та middleware
+ * Не містить логіку запуску сервера - тільки налаштування Express app
  *
- * @fileoverview Main Express application setup
+ * @fileoverview Express application configuration
  * @module app
  * @author GoIT Student
- * @version 1.0.0 - Simple and clean implementation
+ * @version 1.0.0 - Clean architecture approach
  */
 
 import express from "express";
@@ -47,21 +47,5 @@ app.use((req, res) => {
     message: `Роут ${req.originalUrl} не знайдено`
   });
 });
-
-// 🚀 Запуск сервера (тільки коли запускається напряму, не через тести)
-const PORT = process.env.PORT || 3000;
-const HOST = process.env.HOST || '0.0.0.0';
-
-// Перевіряємо чи це НЕ тестове середовище та файл запускається напряму
-if (process.env.NODE_ENV !== 'test' &&
-    process.argv[1] &&
-    process.argv[1].endsWith('/src/app.js')) {
-  app.listen(PORT, HOST, () => {
-    console.log(`🚀 Server is running on port: ${PORT}`);
-    console.log(`🌐 Local access: http://localhost:${PORT}/api/contacts`);
-    console.log(`🌍 Network access: http://[your-ip]:${PORT}/api/contacts`);
-    console.log(`📋 Ready for development and production!`);
-  });
-}
 
 export default app;

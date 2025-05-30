@@ -116,17 +116,35 @@ jobs:
     - name: 🏗️ Start application
       run: |
         # Запуск сервера у фоновому режимі
+        echo "🚀 Starting server..."
         npm start &
         APP_PID=$!
-        echo "App PID: $APP_PID"
+        echo "📊 App PID: $APP_PID"
 
         # Очікування запуску сервера
         echo "🔄 Waiting for server to start..."
-        sleep 10
+        sleep 15
 
-        # Health check
+        # Перевірка чи процес ще працює
+        if ! kill -0 $APP_PID 2>/dev/null; then
+          echo "❌ Server process died!"
+          exit 1
+        fi
+
+        # Перевірка чи порт відкритий
+        echo "🔍 Checking if port 3000 is open..."
+        netstat -ln | grep :3000 || echo "⚠️ Port 3000 not found in netstat"
+
+        # Health check з детальною інформацією
         echo "🏥 Performing health check..."
-        curl -f http://localhost:3000/api/contacts || exit 1
+        curl -v -f http://localhost:3000/api/contacts || {
+          echo "❌ Health check failed!"
+          echo "📋 Process status:"
+          ps aux | grep node || echo "No node processes found"
+          echo "🔍 Network status:"
+          netstat -ln | grep :3000 || echo "Port 3000 not listening"
+          exit 1
+        }
 
         # Зупинка сервера
         kill $APP_PID
