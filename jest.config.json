@@ -3,5 +3,12 @@
   "transform": {},
   "testMatch": [
     "**/tests/**/*.test.js"
+  ],
+  "testPathIgnorePatterns": [
+    "/node_modules/"
+  ],
+  "modulePathIgnorePatterns": [
+    "/.docs/",
+    "/.docs/trash/"
   ]
 }

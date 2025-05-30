@@ -1,5 +1,5 @@
 // filepath: src/services/contactsServices.js
-import fs from 'fs/promises';
+import { readFile, writeFile } from 'fs/promises';
 import path from 'path';
 import { nanoid } from 'nanoid';
 
@@ -12,7 +12,7 @@ const contactsPath = path.join(process.cwd(), 'src', 'db', 'contacts.json');
  */
 export const listContacts = async () => {
   try {
-    const data = await fs.readFile(contactsPath, 'utf-8');
+    const data = await readFile(contactsPath, 'utf-8');
     return JSON.parse(data);
   } catch (error) {
     if (error.code === 'ENOENT') {
@@ -53,7 +53,7 @@ export const removeContact = async (contactId) => {
   const [deletedContact] = contacts.splice(contactIndex, 1);
 
   try {
-    await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+    await writeFile(contactsPath, JSON.stringify(contacts, null, 2));
     return deletedContact;
   } catch (error) {
     if (error.code === 'EACCES') {
@@ -82,7 +82,7 @@ export const addContact = async (body) => {
   contacts.push(newContact);
 
   try {
-    await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+    await writeFile(contactsPath, JSON.stringify(contacts, null, 2));
     return newContact;
   } catch (error) {
     if (error.code === 'EACCES') {
@@ -117,7 +117,7 @@ export const updateContact = async (contactId, body) => {
   contacts[contactIndex] = updatedContact;
 
   try {
-    await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+    await writeFile(contactsPath, JSON.stringify(contacts, null, 2));
     return updatedContact;
   } catch (error) {
     if (error.code === 'EACCES') {

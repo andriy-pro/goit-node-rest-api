@@ -1,17 +1,22 @@
 import { jest } from '@jest/globals';
-import fs from 'fs/promises';
 
-// Імпортуємо функції для тестування (поки що будуть помилки - це нормально для RED фази)
-import {
+// Мокаємо fs/promises для тестування без реальних файлів
+const mockReadFile = jest.fn();
+const mockWriteFile = jest.fn();
+
+jest.unstable_mockModule('fs/promises', () => ({
+  readFile: mockReadFile,
+  writeFile: mockWriteFile
+}));
+
+// Імпортуємо функції для тестування ПІСЛЯ мокання
+const {
   listContacts,
   getContactById,
   removeContact,
   addContact,
   updateContact
-} from '../../services/contactsServices.js';
-
-// Мокаємо fs/promises для тестування без реальних файлів
-jest.mock('fs/promises');
+} = await import('../../src/services/contactsServices.js');
 
 describe('Contacts Services', () => {
   const mockContacts = [
@@ -38,23 +43,25 @@ describe('Contacts Services', () => {
   beforeEach(() => {
     // Скидаємо всі моки перед кожним тестом
     jest.clearAllMocks();
+    mockReadFile.mockReset();
+    mockWriteFile.mockReset();
   });
 
   describe('listContacts', () => {
     it('should return array of all contacts', async () => {
       // Arrange - налаштовуємо мок
-      fs.readFile.mockResolvedValue(JSON.stringify(mockContacts));
+      mockReadFile.mockResolvedValue(JSON.stringify(mockContacts));
 
       // Act - викликаємо функцію
       const result = await listContacts();
 
       // Assert - перевіряємо результат
       expect(result).toEqual(mockContacts);
-      expect(fs.readFile).toHaveBeenCalledTimes(1);
+      expect(mockReadFile).toHaveBeenCalledTimes(1);
     });
 
     it('should return empty array if file is empty', async () => {
-      fs.readFile.mockResolvedValue('[]');
+      mockReadFile.mockResolvedValue('[]');
 
       const result = await listContacts();
 
@@ -63,7 +70,7 @@ describe('Contacts Services', () => {
     });
 
     it('should handle file read errors', async () => {
-      fs.readFile.mockRejectedValue(new Error('File not found'));
+      mockReadFile.mockRejectedValue(new Error('File not found'));
 
       await expect(listContacts()).rejects.toThrow('File not found');
     });
@@ -71,7 +78,7 @@ describe('Contacts Services', () => {
 
   describe('getContactById', () => {
     it('should return contact when valid ID provided', async () => {
-      fs.readFile.mockResolvedValue(JSON.stringify(mockContacts));
+      mockReadFile.mockResolvedValue(JSON.stringify(mockContacts));
 
       const result = await getContactById('1');
 
@@ -81,7 +88,7 @@ describe('Contacts Services', () => {
     });
 
     it('should return null when contact not found', async () => {
-      fs.readFile.mockResolvedValue(JSON.stringify(mockContacts));
+      mockReadFile.mockResolvedValue(JSON.stringify(mockContacts));
 
       const result = await getContactById('999');
 
@@ -89,7 +96,7 @@ describe('Contacts Services', () => {
     });
 
     it('should return null when invalid ID provided', async () => {
-      fs.readFile.mockResolvedValue(JSON.stringify(mockContacts));
+      mockReadFile.mockResolvedValue(JSON.stringify(mockContacts));
 
       const result = await getContactById('');
 
@@ -99,29 +106,29 @@ describe('Contacts Services', () => {
 
   describe('removeContact', () => {
     it('should remove and return contact when valid ID provided', async () => {
-      fs.readFile.mockResolvedValue(JSON.stringify(mockContacts));
-      fs.writeFile.mockResolvedValue();
+      mockReadFile.mockResolvedValue(JSON.stringify(mockContacts));
+      mockWriteFile.mockResolvedValue();
 
       const result = await removeContact('1');
 
       expect(result).toEqual(mockContacts[0]);
-      expect(fs.writeFile).toHaveBeenCalledTimes(1);
+      expect(mockWriteFile).toHaveBeenCalledTimes(1);
     });
 
     it('should return null when contact to remove not found', async () => {
-      fs.readFile.mockResolvedValue(JSON.stringify(mockContacts));
+      mockReadFile.mockResolvedValue(JSON.stringify(mockContacts));
 
       const result = await removeContact('999');
 
       expect(result).toBeNull();
-      expect(fs.writeFile).not.toHaveBeenCalled();
+      expect(mockWriteFile).not.toHaveBeenCalled();
     });
   });
 
   describe('addContact', () => {
     it('should add new contact with generated ID', async () => {
-      fs.readFile.mockResolvedValue(JSON.stringify(mockContacts));
-      fs.writeFile.mockResolvedValue();
+      mockReadFile.mockResolvedValue(JSON.stringify(mockContacts));
+      mockWriteFile.mockResolvedValue();
 
       const newContact = {
         name: 'John Doe',
@@ -135,7 +142,7 @@ describe('Contacts Services', () => {
       expect(result.id).toBeDefined();
       expect(typeof result.id).toBe('string');
       expect(result.id.length).toBeGreaterThan(0);
-      expect(fs.writeFile).toHaveBeenCalledTimes(1);
+      expect(mockWriteFile).toHaveBeenCalledTimes(1);
     });
 
     it('should handle missing required fields', async () => {
@@ -150,8 +157,8 @@ describe('Contacts Services', () => {
 
   describe('updateContact', () => {
     it('should update existing contact and return updated contact', async () => {
-      fs.readFile.mockResolvedValue(JSON.stringify(mockContacts));
-      fs.writeFile.mockResolvedValue();
+      mockReadFile.mockResolvedValue(JSON.stringify(mockContacts));
+      mockWriteFile.mockResolvedValue();
 
       const updateData = {
         name: 'Updated Name',
@@ -166,22 +173,22 @@ describe('Contacts Services', () => {
         email: 'updated@example.com',
         phone: '(992) 914-3792' // phone залишається незмінним
       });
-      expect(fs.writeFile).toHaveBeenCalledTimes(1);
+      expect(mockWriteFile).toHaveBeenCalledTimes(1);
     });
 
     it('should return null when contact to update not found', async () => {
-      fs.readFile.mockResolvedValue(JSON.stringify(mockContacts));
+      mockReadFile.mockResolvedValue(JSON.stringify(mockContacts));
 
       const updateData = { name: 'Updated Name' };
       const result = await updateContact('999', updateData);
 
       expect(result).toBeNull();
-      expect(fs.writeFile).not.toHaveBeenCalled();
+      expect(mockWriteFile).not.toHaveBeenCalled();
     });
 
     it('should handle partial updates correctly', async () => {
-      fs.readFile.mockResolvedValue(JSON.stringify(mockContacts));
-      fs.writeFile.mockResolvedValue();
+      mockReadFile.mockResolvedValue(JSON.stringify(mockContacts));
+      mockWriteFile.mockResolvedValue();
 
       const updateData = { phone: '+380999999999' };
       const result = await updateContact('1', updateData);
