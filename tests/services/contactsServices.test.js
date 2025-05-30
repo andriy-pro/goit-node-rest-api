@@ -24,19 +24,19 @@ describe('Contacts Services', () => {
       id: '1',
       name: 'Allen Raymond',
       email: 'nulla.ante@vestibul.co.uk',
-      phone: '(992) 914-3792'
+      phone: '+380992914379'
     },
     {
       id: '2',
       name: 'Chaim Lewis',
       email: 'dui.in@egetlacus.ca',
-      phone: '(294) 840-6685'
+      phone: '+12948406685'
     },
     {
       id: '3',
       name: 'Kennedy Lane',
       email: 'mattis.Cras@nonenimMauris.net',
-      phone: '(542) 451-7038'
+      phone: '+15424517038'
     }
   ];
 
@@ -171,7 +171,7 @@ describe('Contacts Services', () => {
         id: '1',
         name: 'Updated Name',
         email: 'updated@example.com',
-        phone: '(992) 914-3792' // phone залишається незмінним
+        phone: '+380992914379' // phone залишається незмінним
       });
       expect(mockWriteFile).toHaveBeenCalledTimes(1);
     });

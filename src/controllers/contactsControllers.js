@@ -1,9 +1,9 @@
 /**
  * Контролери для обробки HTTP запитів до API контактів
- * 
+ *
  * @fileoverview Controllers for contacts REST API endpoints
  * @module contactsControllers
- * @author GoIT Student
+ * @author Andriy Nechyporenko
  * @version 1.0.0
  */
 
@@ -18,7 +18,7 @@ import {
 /**
  * Отримати список всіх контактів
  * GET /api/contacts
- * 
+ *
  * @async
  * @function getAllContacts
  * @param {Object} req - Express request object
@@ -30,9 +30,9 @@ export const getAllContacts = async (req, res) => {
     const contacts = await listContacts();
     res.status(200).json(contacts);
   } catch (error) {
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Помилка сервера при отриманні контактів",
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -40,7 +40,7 @@ export const getAllContacts = async (req, res) => {
 /**
  * Отримати один контакт за ID
  * GET /api/contacts/:id
- * 
+ *
  * @async
  * @function getOneContact
  * @param {Object} req - Express request object
@@ -52,18 +52,18 @@ export const getOneContact = async (req, res) => {
   try {
     const { id } = req.params;
     const contact = await getContactById(id);
-    
+
     if (!contact) {
-      return res.status(404).json({ 
-        message: `Контакт з ID ${id} не знайдено` 
+      return res.status(404).json({
+        message: `Контакт з ID ${id} не знайдено`
       });
     }
-    
+
     res.status(200).json(contact);
   } catch (error) {
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Помилка сервера при отриманні контакту",
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -71,7 +71,7 @@ export const getOneContact = async (req, res) => {
 /**
  * Видалити контакт за ID
  * DELETE /api/contacts/:id
- * 
+ *
  * @async
  * @function deleteContact
  * @param {Object} req - Express request object
@@ -83,18 +83,18 @@ export const deleteContact = async (req, res) => {
   try {
     const { id } = req.params;
     const deletedContact = await removeContact(id);
-    
+
     if (!deletedContact) {
-      return res.status(404).json({ 
-        message: `Контакт з ID ${id} не знайдено` 
+      return res.status(404).json({
+        message: `Контакт з ID ${id} не знайдено`
       });
     }
-    
+
     res.status(200).json(deletedContact);
   } catch (error) {
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Помилка сервера при видаленні контакту",
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -102,7 +102,7 @@ export const deleteContact = async (req, res) => {
 /**
  * Створити новий контакт
  * POST /api/contacts
- * 
+ *
  * @async
  * @function createContact
  * @param {Object} req - Express request object
@@ -115,9 +115,9 @@ export const createContact = async (req, res) => {
     const newContact = await addContact(req.body);
     res.status(201).json(newContact);
   } catch (error) {
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Помилка сервера при створенні контакту",
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -125,7 +125,7 @@ export const createContact = async (req, res) => {
 /**
  * Оновити існуючий контакт
  * PUT /api/contacts/:id
- * 
+ *
  * @async
  * @function updateContact
  * @param {Object} req - Express request object
@@ -138,18 +138,18 @@ export const updateContact = async (req, res) => {
   try {
     const { id } = req.params;
     const updatedContact = await updateContactService(id, req.body);
-    
+
     if (!updatedContact) {
-      return res.status(404).json({ 
-        message: `Контакт з ID ${id} не знайдено` 
+      return res.status(404).json({
+        message: `Контакт з ID ${id} не знайдено`
       });
     }
-    
+
     res.status(200).json(updatedContact);
   } catch (error) {
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Помилка сервера при оновленні контакту",
-      error: error.message 
+      error: error.message
     });
   }
 };

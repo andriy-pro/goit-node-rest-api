@@ -1,19 +1,5 @@
 import Joi from "joi";
 
-// Розширений список дозволених доменів
-const ALLOWED_EMAIL_DOMAINS = [
-  // Популярні міжнародні домени
-  'com', 'net', 'org', 'edu', 'gov', 'mil', 'int',
-  // Країнові домени
-  'ua', 'us', 'uk', 'ca', 'de', 'fr', 'it', 'es', 'nl', 'pl', 'cz', 'sk',
-  // Популярні складені домени
-  'co.uk', 'co.jp', 'co.in', 'co.za', 'com.au', 'com.br', 'com.mx',
-  // Сучасні домени
-  'io', 'ai', 'app', 'dev', 'tech', 'info', 'biz', 'name',
-  // Домен, який я обрав для власного сайту: andriy.pro
-  'pro'
-];
-
 // Базові схеми валідації
 const baseContactFields = {
   name: Joi.string()
@@ -28,10 +14,7 @@ const baseContactFields = {
     }),
 
   email: Joi.string()
-    .email({
-      minDomainSegments: 2,
-      tlds: { allow: ALLOWED_EMAIL_DOMAINS }
-    })
+    .email({ minDomainSegments: 2 })
     .max(100)
     .messages({
       'string.email': 'Будь ласка, введіть правильну електронну адресу',
@@ -40,9 +23,9 @@ const baseContactFields = {
     }),
 
   phone: Joi.string()
-    .pattern(/^(\+?1[-.\s]?)?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}$|^\+?[1-9]\d{1,14}$/)
+    .pattern(/^\+[1-9]\d{6,14}$/)
     .messages({
-      'string.pattern.base': 'Телефон має бути у правильному форматі, наприклад: (123) 456-7890, +1234567890 або міжнародний формат',
+      'string.pattern.base': 'Телефон має бути у міжнародному форматі E.164: +380671234567, +12125551234',
       'any.required': 'Телефон є обов\'язковим полем'
     })
 };

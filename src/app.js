@@ -1,10 +1,10 @@
 /**
  * Головний файл Express.js застосунку
  * Налаштовує middleware, роути та обробку помилок
- * 
- * @fileoverview Main Express application setup  
+ *
+ * @fileoverview Main Express application setup
  * @module app
- * @author GoIT Student
+ * @author Andriy Nechyporenko
  * @version 1.0.0
  */
 
@@ -30,8 +30,8 @@ app.use("/api/contacts", contactsRouter);
 
 // Обробка 404 для невідомих роутів
 app.use((req, res) => {
-  res.status(404).json({ 
-    message: `Роут ${req.originalUrl} не знайдено` 
+  res.status(404).json({
+    message: `Роут ${req.originalUrl} не знайдено`
   });
 });
 
@@ -41,9 +41,15 @@ app.use((err, req, res, next) => {
   res.status(status).json({ message });
 });
 
+// Налаштування сервера
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '0.0.0.0'; // Слухаємо на всіх інтерфейсах
 
-app.listen(PORT, () => {
+app.listen(PORT, HOST, () => {
   console.log(`🚀 Server is running on port: ${PORT}`);
-  console.log(`📋 API documentation: http://localhost:${PORT}/api/contacts`);
+  console.log(`🌐 Local access: http://localhost:${PORT}/api/contacts`);
+  console.log(`🌍 Network access: http://[your-ip]:${PORT}/api/contacts`);
+  console.log(`📋 Ready for development and production!`);
 });
+
+export default app;

@@ -1,10 +1,10 @@
 /**
  * Сервіс для роботи з контактами
  * Надає CRUD операції для управління контактами у JSON файлі
- * 
+ *
  * @fileoverview Contacts service with full CRUD functionality
  * @module contactsServices
- * @author GoIT Student
+ * @author Andriy Nechyporenko
  * @version 1.0.0
  */
 
@@ -42,8 +42,8 @@ const ERROR_MESSAGES = {
 const saveContactsToFile = async (contacts) => {
   try {
     await writeFile(
-      CONTACTS_PATH, 
-      JSON.stringify(contacts, null, JSON_INDENT_SPACES), 
+      CONTACTS_PATH,
+      JSON.stringify(contacts, null, JSON_INDENT_SPACES),
       JSON_ENCODING
     );
   } catch (error) {
@@ -59,12 +59,12 @@ const saveContactsToFile = async (contacts) => {
 /**
  * Читає всі контакти з файлу
  * Використовує безпечну обробку помилок для різних сценаріїв
- * 
+ *
  * @async
  * @function listContacts
  * @returns {Promise<Array<Object>>} Масив об'єктів контактів
  * @throws {Error} - Помилки читання файлу або парсингу JSON
- * 
+ *
  * @example
  * const contacts = await listContacts();
  * console.log(contacts); // [{id: '1', name: 'John', email: 'john@example.com', phone: '+123456789'}]
@@ -88,13 +88,13 @@ export const listContacts = async () => {
 /**
  * Отримує контакт за унікальним ідентифікатором
  * Виконує безпечний пошук контакту без модифікації даних
- * 
+ *
  * @async
  * @function getContactById
  * @param {string} contactId - Унікальний ідентифікатор контакту
  * @returns {Promise<Object|null>} Об'єкт контакту або null, якщо не знайдено
  * @throws {Error} - Помилки читання файлу
- * 
+ *
  * @example
  * const contact = await getContactById('123');
  * if (contact) {
@@ -110,13 +110,13 @@ export const getContactById = async (contactId) => {
 /**
  * Видаляє контакт з колекції за ідентифікатором
  * Виконує атомарну операцію видалення з безпечним збереженням
- * 
+ *
  * @async
  * @function removeContact
  * @param {string} contactId - Унікальний ідентифікатор контакту для видалення
  * @returns {Promise<Object|null>} Видалений об'єкт контакту або null, якщо не знайдено
  * @throws {Error} - Помилки читання/запису файлу
- * 
+ *
  * @example
  * const deletedContact = await removeContact('123');
  * if (deletedContact) {
@@ -133,14 +133,14 @@ export const removeContact = async (contactId) => {
 
   const [deletedContact] = contacts.splice(contactIndex, 1);
   await saveContactsToFile(contacts);
-  
+
   return deletedContact;
 };
 
 /**
  * Створює та додає новий контакт до колекції
  * Автоматично генерує унікальний ідентифікатор для нового контакту
- * 
+ *
  * @async
  * @function addContact
  * @param {Object} body - Дані нового контакту
@@ -149,7 +149,7 @@ export const removeContact = async (contactId) => {
  * @param {string} body.phone - Номер телефону контакту (обов'язкове)
  * @returns {Promise<Object>} Створений контакт з згенерованим ID
  * @throws {Error} - Помилки валідації або запису файлу
- * 
+ *
  * @example
  * const newContact = await addContact({
  *   name: 'John Doe',
@@ -169,14 +169,14 @@ export const addContact = async (body) => {
 
   contacts.push(newContact);
   await saveContactsToFile(contacts);
-  
+
   return newContact;
 };
 
 /**
  * Оновлює існуючий контакт частковими або повними даними
  * Зберігає існуючі поля, які не передані для оновлення
- * 
+ *
  * @async
  * @function updateContact
  * @param {string} contactId - Унікальний ідентифікатор контакту для оновлення
@@ -186,7 +186,7 @@ export const addContact = async (body) => {
  * @param {string} [body.phone] - Новий номер телефону (опціонально)
  * @returns {Promise<Object|null>} Оновлений контакт або null, якщо не знайдено
  * @throws {Error} - Помилки валідації або запису файлу
- * 
+ *
  * @example
  * const updatedContact = await updateContact('123', { name: 'Jane Doe' });
  * if (updatedContact) {
@@ -210,6 +210,6 @@ export const updateContact = async (contactId, body) => {
 
   contacts[contactIndex] = updatedContact;
   await saveContactsToFile(contacts);
-  
+
   return updatedContact;
 };
