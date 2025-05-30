@@ -1,0 +1,246 @@
+name: GoIT Node.js REST API - CI/CD Pipeline
+
+# 🚀 Тригери для автоматичного запуску
+on:
+  # Запуск при push до основних гілок
+  push:
+    branches: [ main, master, hw02-express ]
+    paths-ignore:
+      - '*.md'
+      - 'docs/**'
+      - '.gitignore'
+
+  # Запуск при створенні Pull Request
+  pull_request:
+    branches: [ main, master, hw02-express ]
+    paths-ignore:
+      - '*.md'
+      - 'docs/**'
+      - '.gitignore'
+
+  # Можливість запуску вручну
+  workflow_dispatch:
+
+# 🌍 Глобальні змінні середовища
+env:
+  NODE_ENV: test
+  PORT: 3000
+
+jobs:
+  # 🔍 Код-аналіз та лінтинг
+  lint:
+    name: 🔍 Code Quality & Linting
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+
+    - name: 📦 Install dependencies
+      run: npm ci
+
+    - name: 🔍 Run ESLint
+      run: npm run lint
+      continue-on-error: false
+
+    - name: 📊 Upload lint results
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: lint-results
+        path: lint-results.json
+
+  # 🧪 Тестування на різних версіях Node.js
+  test:
+    name: 🧪 Tests (Node.js ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    needs: lint # Запускаємо тільки після успішного лінтингу
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x] # LTS та Current версії
+
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+
+    - name: 🟢 Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: 📦 Install dependencies
+      run: npm ci
+
+    - name: 🧪 Run unit tests
+      run: npm test -- --testPathPattern=services --coverage
+
+    - name: 🔗 Run integration tests
+      run: npm test -- --testPathPattern=integration
+
+    - name: 📊 Upload test coverage
+      if: matrix.node-version == '20.x' # Тільки для основної версії
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  # 🏗️ Збірка та перевірка додатку
+  build:
+    name: 🏗️ Build & Health Check
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+
+    - name: 📦 Install dependencies
+      run: npm ci
+
+    - name: 🏗️ Start application
+      run: |
+        # Запуск сервера у фоновому режимі
+        npm start &
+        APP_PID=$!
+        echo "App PID: $APP_PID"
+
+        # Очікування запуску сервера
+        echo "🔄 Waiting for server to start..."
+        sleep 10
+
+        # Health check
+        echo "🏥 Performing health check..."
+        curl -f http://localhost:3000/api/contacts || exit 1
+
+        # Зупинка сервера
+        kill $APP_PID
+        echo "✅ Health check passed!"
+
+  # 🔒 Безпека та вразливості
+  security:
+    name: 🔒 Security Audit
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+
+    - name: 📦 Install dependencies
+      run: npm ci
+
+    - name: 🔒 Run npm audit
+      run: |
+        # Перевірка на критичні вразливості
+        npm audit --audit-level=high
+
+    - name: 🛡️ Run security scan
+      run: |
+        # Додаткові перевірки безпеки (можна додати інші інструменти)
+        npx --yes audit-ci --high
+      continue-on-error: true
+
+  # 📈 Моніторинг продуктивності
+  performance:
+    name: 📈 Performance Tests
+    runs-on: ubuntu-latest
+    needs: [test, build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+
+    - name: 📦 Install dependencies
+      run: npm ci
+
+    - name: 🚀 Start server for performance testing
+      run: |
+        npm start &
+        APP_PID=$!
+        sleep 10
+
+        # Простий performance test
+        echo "📊 Running performance tests..."
+
+        # Тест швидкості відповіді
+        response_time=$(curl -o /dev/null -s -w '%{time_total}' http://localhost:3000/api/contacts)
+        echo "Response time: ${response_time}s"
+
+        # Перевірка, що відповідь швидша за 2 секунди
+        if (( $(echo "${response_time} > 2.0" | bc -l) )); then
+          echo "❌ Performance test failed: Response time too slow"
+          exit 1
+        fi
+
+        echo "✅ Performance test passed!"
+        kill $APP_PID
+
+  # 🎯 Фінальна перевірка та звітність
+  final-report:
+    name: 📋 Final CI/CD Report
+    runs-on: ubuntu-latest
+    needs: [lint, test, build, security]
+    if: always() # Запускаємо завжди, навіть якщо попередні джоби провалились
+
+    steps:
+    - name: 📋 Generate CI/CD Report
+      run: |
+        echo "## 🎯 GoIT Node.js REST API - CI/CD Report" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📊 Job Results:" >> $GITHUB_STEP_SUMMARY
+        echo "- 🔍 **Linting:** ${{ needs.lint.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- 🧪 **Testing:** ${{ needs.test.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- 🏗️ **Build:** ${{ needs.build.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- 🔒 **Security:** ${{ needs.security.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🚀 Deployment Ready:" >> $GITHUB_STEP_SUMMARY
+
+        if [[ "${{ needs.lint.result }}" == "success" && "${{ needs.test.result }}" == "success" && "${{ needs.build.result }}" == "success" ]]; then
+          echo "✅ **YES** - All critical checks passed!" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **NO** - Some critical checks failed!" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📚 Next Steps:" >> $GITHUB_STEP_SUMMARY
+        echo "1. Review any failed checks above" >> $GITHUB_STEP_SUMMARY
+        echo "2. Fix issues and push again" >> $GITHUB_STEP_SUMMARY
+        echo "3. Merge when all checks pass ✅" >> $GITHUB_STEP_SUMMARY
+
+    - name: 🎉 Success Notification
+      if: needs.lint.result == 'success' && needs.test.result == 'success' && needs.build.result == 'success'
+      run: |
+        echo "🎉 All CI/CD checks passed successfully!"
+        echo "✅ Code quality: PASSED"
+        echo "✅ Tests: PASSED"
+        echo "✅ Build: PASSED"
+        echo "🚀 Ready for deployment!"

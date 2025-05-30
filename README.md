@@ -1,5 +1,12 @@
 # goit-node-rest-api
 
+[![Node.js CI](https://github.com/andriy-pro/goit-node-rest-api/actions/workflows/ci.yml/badge.svg)](https://github.com/andriy-pro/goit-node-rest-api/actions/workflows/ci.yml)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
+[![npm Version](https://img.shields.io/badge/npm-%3E%3D8.0.0-brightgreen.svg)](https://www.npmjs.com/)
+[![Express.js](https://img.shields.io/badge/Express.js-4.21.1-lightgrey.svg)](https://expressjs.com/)
+[![Security Headers](https://img.shields.io/badge/security-helmet-green.svg)](https://helmetjs.github.io/)
+
 Repository for the homework solution from the GoIT course 'Fullstack. Back End Development: Node.js', Topic 4: REST API.
 
 ---
@@ -98,6 +105,13 @@ npm i
   - Централізована обробка помилок в Express.js з middleware для обробки всіх типів помилок.
   - Структуровані повідомлення про помилки з детальним описом проблеми для розробників та користувачів.
 
+- **Безпека HTTP заголовків (Helmet):**
+
+  - Інтегрований Helmet middleware для захисту HTTP заголовків.
+  - Автоматичне налаштування заголовків безпеки: Content-Security-Policy, X-Frame-Options, X-XSS-Protection.
+  - Приховування заголовка `X-Powered-By` для безпеки в production.
+  - Захист від XSS атак, clickjacking та інших векторів атак.
+
 - **Професійні middleware та логування:**
 
   - Використання `morgan` для HTTP логування запитів у development режимі.
@@ -161,6 +175,38 @@ npm i
    ```bash
    curl http://localhost:3000/api/contacts
    ```
+
+#### Змінні оточення (Environment Variables)
+
+Проєкт підтримує наступні змінні оточення:
+
+| Змінна | Значення за замовчуванням | Опис |
+|--------|---------------------------|------|
+| `PORT` | `3000` | Порт для запуску сервера |
+| `HOST` | `0.0.0.0` | Хост для запуску сервера |
+| `NODE_ENV` | - | Середовище виконання (`development`, `production`, `test`) |
+
+**Приклад використання:**
+
+```bash
+# Запуск на іншому порту
+PORT=8080 npm start
+
+# Запуск в production режимі
+NODE_ENV=production PORT=8080 npm start
+
+# Запуск з кастомним хостом
+HOST=127.0.0.1 PORT=3000 npm run dev
+```
+
+**Створення файлу .env (опціонально):**
+
+```bash
+# .env
+PORT=3000
+HOST=0.0.0.0
+NODE_ENV=development
+```
 
 API буде доступний за адресою `http://localhost:3000`
 

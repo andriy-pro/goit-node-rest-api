@@ -1,20 +1,10 @@
 /**
- * Точка входу для запуску Express сервера
- * Імпортує та запускає застосунок на заданому порту
+ * Альтернативна точка входу (для зворотної сумісності)
+ * Просто імпортує основний застосунок з src/app.js
  *
- * @fileoverview Server entry point
- * @author Andriy Nechyporenko
+ * @fileoverview Alternative server entry point
+ * @author GoIT Student
  * @version 1.0.0
  */
 
-import app from "./src/app.js";
-
-const PORT = process.env.PORT || 3000;
-const HOST = process.env.HOST || '0.0.0.0'; // Слухаємо на всіх інтерфейсах
-
-app.listen(PORT, HOST, () => {
-  console.log(`🚀 Server is running on port: ${PORT}`);
-  console.log(`🌐 Local access: http://localhost:${PORT}/api/contacts`);
-  console.log(`🌍 Network access: http://[your-ip]:${PORT}/api/contacts`);
-  console.log(`📋 Ready for development and production!`);
-});
+import "./src/app.js";

@@ -4,8 +4,8 @@
  *
  * @fileoverview Contacts service with full CRUD functionality
  * @module contactsServices
- * @author Andriy Nechyporenko
- * @version 1.0.0
+ * @author GoIT Student
+ * @version 1.0.0 - Simple and clean implementation
  */
 
 import { readFile, writeFile } from 'fs/promises';

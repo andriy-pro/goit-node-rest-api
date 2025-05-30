@@ -1,11 +1,5 @@
 [
   {
-    "id": "AeHIrLTr6JkxGE6SN-0Rw",
-    "name": "Allen Raymond",
-    "email": "nulla.ante@vestibul.co.uk",
-    "phone": "+380992914379"
-  },
-  {
     "id": "qdggE76Jtbfd9eWJHrssH",
     "name": "Chaim Lewis",
     "email": "dui.in@egetlacus.ca",
@@ -70,5 +64,29 @@
     "name": "Invalid Phone User",
     "email": "invalid@test.com",
     "phone": "(123) 456-7890"
+  },
+  {
+    "id": "GJeBhKtzYKUH4DOlChCmK",
+    "name": "Тестовий Контакт",
+    "email": "test@example.com",
+    "phone": "+380501234567"
+  },
+  {
+    "id": "k7qAPJubVGArGwpDljen2",
+    "name": "Test API User",
+    "email": "testapi@example.com",
+    "phone": "+380501111111"
+  },
+  {
+    "id": "BtwsYb1n6c8egiocYud4S",
+    "name": "Тестовий Контакт",
+    "email": "test@example.com",
+    "phone": "+380501234567"
+  },
+  {
+    "id": "mgRk5qtoCCGoFVGm1ATio",
+    "name": "Тестовий Контакт",
+    "email": "test@example.com",
+    "phone": "+380501234567"
   }
 ]
