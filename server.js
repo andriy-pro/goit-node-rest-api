@@ -12,8 +12,9 @@ import app from './src/app.js';
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 
-// Запускаємо сервер (крім тестів)
-if (process.env.NODE_ENV !== 'test') {
+// Запускаємо сервер (крім unit тестів Jest)
+// CI/CD health check потребує запущений сервер навіть в test середовищі
+if (process.env.NODE_ENV !== 'test' || process.env.CI_HEALTH_CHECK === 'true') {
   app.listen(PORT, HOST, () => {
     console.log(`🚀 Server is running on port: ${PORT}`);
     console.log(`🌐 Local access: http://localhost:${PORT}/api/contacts`);

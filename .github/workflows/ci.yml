@@ -115,7 +115,7 @@ jobs:
 
     - name: 🏗️ Start application
       run: |
-        # Запуск сервера у фоновому режимі
+        # Запуск сервера у фоновому режимі для health check
         echo "🚀 Starting server..."
         npm start &
         APP_PID=$!
@@ -149,6 +149,9 @@ jobs:
         # Зупинка сервера
         kill $APP_PID
         echo "✅ Health check passed!"
+      env:
+        NODE_ENV: ci
+        PORT: 3000
 
   # 🔒 Безпека та вразливості
   security:
