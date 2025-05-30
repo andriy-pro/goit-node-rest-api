@@ -6,6 +6,7 @@
  * @module contactsRouter
  * @author Andriy Nechyporenko
  * @version 1.0.0
+ * @license GPL-3.0
  */
 
 import express from "express";

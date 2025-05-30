@@ -6,6 +6,7 @@
  * @module app
  * @author GoIT Student
  * @version 1.0.0 - Clean architecture approach
+ * @license GPL-3.0
  */
 
 import express from "express";

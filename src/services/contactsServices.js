@@ -6,6 +6,7 @@
  * @module contactsServices
  * @author GoIT Student
  * @version 1.0.0 - Simple and clean implementation
+ * @license GPL-3.0
  */
 
 import { readFile, writeFile } from 'fs/promises';

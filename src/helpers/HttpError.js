@@ -6,6 +6,7 @@
  * @module HttpError
  * @author Andriy Nechyporenko
  * @version 1.0.0
+ * @license GPL-3.0
  */
 
 // Стандартні повідомлення для HTTP статус кодів

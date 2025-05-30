@@ -5,6 +5,7 @@
  * @fileoverview Main server entry point
  * @author GoIT Student
  * @version 1.0.0
+ * @license GPL-3.0
  */
 
 import app from './src/app.js';

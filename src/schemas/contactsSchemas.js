@@ -1,3 +1,14 @@
+/**
+ * Схеми валідації для контактів з використанням Joi
+ * Забезпечує валідацію даних для створення та оновлення контактів
+ *
+ * @fileoverview Joi validation schemas for contacts API
+ * @module contactsSchemas
+ * @author GoIT Student
+ * @version 1.0.0
+ * @license GPL-3.0
+ */
+
 import Joi from "joi";
 
 // Базові схеми валідації
