@@ -4,7 +4,7 @@
  *
  * @fileoverview Contacts service with full CRUD functionality
  * @module contactsServices
- * @author GoIT Student
+ * @author Andriy Nechyporenko
  * @version 1.0.0 - Simple and clean implementation
  * @license GPL-3.0
  */

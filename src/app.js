@@ -4,7 +4,7 @@
  *
  * @fileoverview Express application configuration
  * @module app
- * @author GoIT Student
+ * @author Andriy Nechyporenko
  * @version 1.0.0 - Clean architecture approach
  * @license GPL-3.0
  */

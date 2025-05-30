@@ -4,7 +4,7 @@
  *
  * @fileoverview Joi validation schemas for contacts API
  * @module contactsSchemas
- * @author GoIT Student
+ * @author Andriy Nechyporenko
  * @version 1.0.0
  * @license GPL-3.0
  */

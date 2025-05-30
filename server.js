@@ -3,7 +3,7 @@
  * Запускає Express сервер для всіх середовищ (development, production, CI/CD)
  *
  * @fileoverview Main server entry point
- * @author GoIT Student
+ * @author Andriy Nechyporenko
  * @version 1.0.0
  * @license GPL-3.0
  */
