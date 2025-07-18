@@ -105,7 +105,7 @@ describe('PATCH /api/contacts/:id/favorite', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('message');
-      expect(response.body.message).toMatch(/boolean/i);
+      expect(response.body.message).toContain('Favorite field is required');
     });
   });
 

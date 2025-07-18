@@ -31,7 +31,7 @@ describe('GET /api/contacts/:id', () => {
       .expect(400);
 
     expect(response.body).toHaveProperty('message');
-    expect(response.body.message).toContain('Invalid ID format');
+    expect(response.body.message).toContain('is not a valid ID');
   });
 
   it('should return 400 for negative ID', async () => {
@@ -40,7 +40,7 @@ describe('GET /api/contacts/:id', () => {
       .expect(400);
 
     expect(response.body).toHaveProperty('message');
-    expect(response.body.message).toContain('Invalid ID format');
+    expect(response.body.message).toContain('is not a valid ID');
   });
 
   it('should return 400 for ID with non-numeric characters', async () => {
@@ -49,6 +49,6 @@ describe('GET /api/contacts/:id', () => {
       .expect(400);
 
     expect(response.body).toHaveProperty('message');
-    expect(response.body.message).toContain('Invalid ID format');
+    expect(response.body.message).toContain('is not a valid ID');
   });
 }); 

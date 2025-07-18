@@ -62,7 +62,7 @@ describe('PUT /api/contacts/:id', () => {
       .expect(400);
 
     expect(response.body).toHaveProperty('message');
-    expect(response.body.message).toContain('name');
+    expect(response.body.message).toContain('Name is a required field');
   });
 
   it('should return 400 for invalid email format', async () => {
@@ -96,14 +96,14 @@ describe('PUT /api/contacts/:id', () => {
       .expect(400);
 
     expect(response.body).toHaveProperty('message');
-    expect(response.body.message).toContain('phone');
+    expect(response.body.message).toContain('Phone must be in international E.164 format');
   });
 
   it('should preserve contact structure after update', async () => {
     const contact = await createTestContactInDb();
     const updateData = {
       name: 'Updated Name',
-      email: 'updated@example.com',
+      email: `updated-${Date.now()}@example.com`, // унікальний email
       phone: '+380991112233',
       favorite: true
     };
