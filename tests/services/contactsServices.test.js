@@ -1,201 +1,106 @@
-import { jest } from '@jest/globals';
 
-// Мокаємо fs/promises для тестування без реальних файлів
-const mockReadFile = jest.fn();
-const mockWriteFile = jest.fn();
-
-jest.unstable_mockModule('fs/promises', () => ({
-  readFile: mockReadFile,
-  writeFile: mockWriteFile
-}));
-
-// Імпортуємо функції для тестування ПІСЛЯ мокання
-const {
+import { Contact } from '../../src/models/Contact.js';
+import sequelize from '../../src/db/connection.js';
+import {
   listContacts,
   getContactById,
   removeContact,
   addContact,
-  updateContact
-} = await import('../../src/services/contactsServices.js');
+  updateContact,
+  updateStatusContact
+} from '../../src/services/contactsServices.js';
 
-describe('Contacts Services', () => {
-  const mockContacts = [
-    {
-      id: '1',
-      name: 'Allen Raymond',
-      email: 'nulla.ante@vestibul.co.uk',
-      phone: '+380992914379'
-    },
-    {
-      id: '2',
-      name: 'Chaim Lewis',
-      email: 'dui.in@egetlacus.ca',
-      phone: '+12948406685'
-    },
-    {
-      id: '3',
-      name: 'Kennedy Lane',
-      email: 'mattis.Cras@nonenimMauris.net',
-      phone: '+15424517038'
-    }
-  ];
+describe('Contacts Services (Sequelize)', () => {
+  // Тестові дані
+  const testContact = {
+    name: 'Test User',
+    email: 'testuser@example.com',
+    phone: '+380671234567',
+    favorite: false
+  };
 
-  beforeEach(() => {
-    // Скидаємо всі моки перед кожним тестом
-    jest.clearAllMocks();
-    mockReadFile.mockReset();
-    mockWriteFile.mockReset();
+  // Очищення таблиці перед кожним тестом
+  beforeEach(async () => {
+    await Contact.destroy({ where: {}, truncate: true });
   });
 
-  describe('listContacts', () => {
-    it('should return array of all contacts', async () => {
-      // Arrange - налаштовуємо мок
-      mockReadFile.mockResolvedValue(JSON.stringify(mockContacts));
-
-      // Act - викликаємо функцію
-      const result = await listContacts();
-
-      // Assert - перевіряємо результат
-      expect(result).toEqual(mockContacts);
-      expect(mockReadFile).toHaveBeenCalledTimes(1);
-    });
-
-    it('should return empty array if file is empty', async () => {
-      mockReadFile.mockResolvedValue('[]');
-
-      const result = await listContacts();
-
-      expect(result).toEqual([]);
-      expect(Array.isArray(result)).toBe(true);
-    });
-
-    it('should handle file read errors', async () => {
-      mockReadFile.mockRejectedValue(new Error('File not found'));
-
-      await expect(listContacts()).rejects.toThrow('File not found');
-    });
+  afterAll(async () => {
+    await sequelize.close();
   });
 
-  describe('getContactById', () => {
-    it('should return contact when valid ID provided', async () => {
-      mockReadFile.mockResolvedValue(JSON.stringify(mockContacts));
-
-      const result = await getContactById('1');
-
-      expect(result).toEqual(mockContacts[0]);
-      expect(result.id).toBe('1');
-      expect(result.name).toBe('Allen Raymond');
-    });
-
-    it('should return null when contact not found', async () => {
-      mockReadFile.mockResolvedValue(JSON.stringify(mockContacts));
-
-      const result = await getContactById('999');
-
-      expect(result).toBeNull();
-    });
-
-    it('should return null when invalid ID provided', async () => {
-      mockReadFile.mockResolvedValue(JSON.stringify(mockContacts));
-
-      const result = await getContactById('');
-
-      expect(result).toBeNull();
-    });
+  it('should create a new contact', async () => {
+    const contact = await addContact(testContact);
+    expect(contact).toBeDefined();
+    expect(contact.name).toBe(testContact.name);
+    expect(contact.email).toBe(testContact.email);
+    expect(contact.phone).toBe(testContact.phone);
+    expect(contact.favorite).toBe(false);
   });
 
-  describe('removeContact', () => {
-    it('should remove and return contact when valid ID provided', async () => {
-      mockReadFile.mockResolvedValue(JSON.stringify(mockContacts));
-      mockWriteFile.mockResolvedValue();
-
-      const result = await removeContact('1');
-
-      expect(result).toEqual(mockContacts[0]);
-      expect(mockWriteFile).toHaveBeenCalledTimes(1);
-    });
-
-    it('should return null when contact to remove not found', async () => {
-      mockReadFile.mockResolvedValue(JSON.stringify(mockContacts));
-
-      const result = await removeContact('999');
-
-      expect(result).toBeNull();
-      expect(mockWriteFile).not.toHaveBeenCalled();
-    });
+  it('should not allow duplicate email', async () => {
+    await addContact(testContact);
+    await expect(addContact(testContact)).rejects.toThrow(/електронною адресою вже існує/);
   });
 
-  describe('addContact', () => {
-    it('should add new contact with generated ID', async () => {
-      mockReadFile.mockResolvedValue(JSON.stringify(mockContacts));
-      mockWriteFile.mockResolvedValue();
-
-      const newContact = {
-        name: 'John Doe',
-        email: 'john@example.com',
-        phone: '+380123456789'
-      };
-
-      const result = await addContact(newContact);
-
-      expect(result).toMatchObject(newContact);
-      expect(result.id).toBeDefined();
-      expect(typeof result.id).toBe('string');
-      expect(result.id.length).toBeGreaterThan(0);
-      expect(mockWriteFile).toHaveBeenCalledTimes(1);
-    });
-
-    it('should handle missing required fields', async () => {
-      const invalidContact = {
-        name: 'John Doe'
-        // missing email and phone
-      };
-
-      await expect(addContact(invalidContact)).rejects.toThrow();
-    });
+  it('should list all contacts', async () => {
+    await addContact(testContact);
+    const contacts = await listContacts();
+    expect(Array.isArray(contacts)).toBe(true);
+    expect(contacts.length).toBe(1);
+    expect(contacts[0].email).toBe(testContact.email);
   });
 
-  describe('updateContact', () => {
-    it('should update existing contact and return updated contact', async () => {
-      mockReadFile.mockResolvedValue(JSON.stringify(mockContacts));
-      mockWriteFile.mockResolvedValue();
+  it('should get contact by id', async () => {
+    const contact = await addContact(testContact);
+    const found = await getContactById(contact.id);
+    expect(found).toBeDefined();
+    expect(found.email).toBe(testContact.email);
+  });
 
-      const updateData = {
-        name: 'Updated Name',
-        email: 'updated@example.com'
-      };
+  it('should return null for non-existent contact', async () => {
+    const found = await getContactById(99999);
+    expect(found).toBeNull();
+  });
 
-      const result = await updateContact('1', updateData);
+  it('should update contact', async () => {
+    const contact = await addContact(testContact);
+    const updated = await updateContact(contact.id, { name: 'Updated Name', favorite: true });
+    expect(updated.name).toBe('Updated Name');
+    expect(updated.favorite).toBe(true);
+  });
 
-      expect(result).toMatchObject({
-        id: '1',
-        name: 'Updated Name',
-        email: 'updated@example.com',
-        phone: '+380992914379' // phone залишається незмінним
-      });
-      expect(mockWriteFile).toHaveBeenCalledTimes(1);
-    });
+  it('should return null when updating non-existent contact', async () => {
+    const updated = await updateContact(99999, { name: 'No User' });
+    expect(updated).toBeNull();
+  });
 
-    it('should return null when contact to update not found', async () => {
-      mockReadFile.mockResolvedValue(JSON.stringify(mockContacts));
+  it('should remove contact', async () => {
+    const contact = await addContact(testContact);
+    const removed = await removeContact(contact.id);
+    expect(removed.id).toBe(contact.id);
+    const found = await getContactById(contact.id);
+    expect(found).toBeNull();
+  });
 
-      const updateData = { name: 'Updated Name' };
-      const result = await updateContact('999', updateData);
+  it('should return null when removing non-existent contact', async () => {
+    const removed = await removeContact(99999);
+    expect(removed).toBeNull();
+  });
 
-      expect(result).toBeNull();
-      expect(mockWriteFile).not.toHaveBeenCalled();
-    });
+  it('should update favorite status', async () => {
+    const contact = await addContact(testContact);
+    const updated = await updateStatusContact(contact.id, { favorite: true });
+    expect(updated.favorite).toBe(true);
+  });
 
-    it('should handle partial updates correctly', async () => {
-      mockReadFile.mockResolvedValue(JSON.stringify(mockContacts));
-      mockWriteFile.mockResolvedValue();
+  it('should return null when updating favorite for non-existent contact', async () => {
+    const updated = await updateStatusContact(99999, { favorite: true });
+    expect(updated).toBeNull();
+  });
 
-      const updateData = { phone: '+380999999999' };
-      const result = await updateContact('1', updateData);
-
-      expect(result.phone).toBe('+380999999999');
-      expect(result.name).toBe('Allen Raymond'); // name залишається незмінним
-      expect(result.email).toBe('nulla.ante@vestibul.co.uk'); // email залишається незмінним
-    });
+  it('should handle invalid data (missing required fields)', async () => {
+    await expect(addContact({ name: 'No Email', phone: '+380671234567' })).rejects.toThrow();
+    await expect(addContact({ email: 'no-name@example.com', phone: '+380671234567' })).rejects.toThrow();
+    await expect(addContact({ name: 'No Phone', email: 'no-phone@example.com' })).rejects.toThrow();
   });
 });

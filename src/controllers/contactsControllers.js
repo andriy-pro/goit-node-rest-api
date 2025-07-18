@@ -13,7 +13,8 @@ import {
   getContactById,
   removeContact,
   addContact,
-  updateContact as updateContactService
+  updateContact as updateContactService,
+  updateStatusContact as updateStatusContactService
 } from "../services/contactsServices.js";
 
 /**
@@ -150,6 +151,38 @@ export const updateContact = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: "Помилка сервера при оновленні контакту",
+      error: error.message
+    });
+  }
+};
+
+/**
+ * Оновити статус favorite контакту
+ * PATCH /api/contacts/:id/favorite
+ *
+ * @async
+ * @function updateContactStatus
+ * @param {Object} req - Express request object
+ * @param {string} req.params.id - ID контакту для оновлення статусу
+ * @param {Object} req.body - Дані для оновлення статусу {favorite: boolean}
+ * @param {Object} res - Express response object
+ * @returns {Promise<void>} HTTP відповідь з оновленим контактом або 404
+ */
+export const updateContactStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedContact = await updateStatusContactService(id, req.body);
+
+    if (!updatedContact) {
+      return res.status(404).json({
+        message: "Not found"
+      });
+    }
+
+    res.status(200).json(updatedContact);
+  } catch (error) {
+    res.status(500).json({
+      message: "Помилка сервера при оновленні статусу контакту",
       error: error.message
     });
   }

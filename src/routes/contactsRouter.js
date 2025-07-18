@@ -16,9 +16,14 @@ import {
   deleteContact,
   createContact,
   updateContact,
+  updateContactStatus,
 } from "../controllers/contactsControllers.js";
 import validateBody from "../helpers/validateBody.js";
-import { contactCreateSchema, contactUpdateSchema } from "../schemas/contactsSchemas.js";
+import {
+  contactCreateSchema,
+  contactUpdateSchema,
+  contactFavoriteSchema
+} from "../schemas/contactsSchemas.js";
 
 const contactsRouter = express.Router();
 
@@ -36,5 +41,8 @@ contactsRouter.post("/", validateBody(contactCreateSchema), createContact);
 
 // PUT /api/contacts/:id - оновити контакт за ID (з валідацією)
 contactsRouter.put("/:id", validateBody(contactUpdateSchema), updateContact);
+
+// PATCH /api/contacts/:id/favorite - оновити статус favorite контакту (з валідацією)
+contactsRouter.patch("/:id/favorite", validateBody(contactFavoriteSchema), updateContactStatus);
 
 export default contactsRouter;

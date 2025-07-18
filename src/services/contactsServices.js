@@ -1,146 +1,110 @@
 /**
  * Сервіс для роботи з контактами
- * Надає CRUD операції для управління контактами у JSON файлі
+ * Надає CRUD операції для управління контактами у PostgreSQL через Sequelize
  *
- * @fileoverview Contacts service with full CRUD functionality
+ * @fileoverview Contacts service with full CRUD functionality using Sequelize
  * @module contactsServices
  * @author Andriy Nechyporenko
- * @version 1.0.0 - Simple and clean implementation
+ * @version 2.0.0 - PostgreSQL + Sequelize implementation
  * @license GPL-3.0
  */
 
-import { readFile, writeFile } from 'fs/promises';
-import path from 'path';
-import { nanoid } from 'nanoid';
-
-// Константи для шляхів та конфігурації
-const CONTACTS_PATH = path.join(process.cwd(), 'src', 'db', 'contacts.json');
-const JSON_ENCODING = 'utf-8';
-const JSON_INDENT_SPACES = 2;
-
-// Типи помилок файлової системи
-const FS_ERROR_CODES = {
-  FILE_NOT_FOUND: 'ENOENT',
-  ACCESS_DENIED: 'EACCES',
-  NO_SPACE: 'ENOSPC'
-};
+import { Contact } from '../models/index.js';
 
 // Повідомлення про помилки
 const ERROR_MESSAGES = {
-  INVALID_JSON: 'Файл contacts.json містить некоректний JSON',
-  READ_ACCESS_DENIED: 'Недостатньо прав для читання файлу contacts.json',
-  WRITE_ACCESS_DENIED: 'Недостатньо прав для запису у файл contacts.json',
-  NO_DISK_SPACE: 'Недостатньо місця на диску для збереження файлу',
-  CONTACT_SAVE_FAILED: 'Недостатньо місця на диску для збереження контакту'
+  CONTACT_NOT_FOUND: 'Контакт не знайдено',
+  DATABASE_ERROR: 'Помилка при роботі з базою даних',
+  VALIDATION_ERROR: 'Помилка валідації даних',
+  DUPLICATE_EMAIL: 'Контакт з такою електронною адресою вже існує'
 };
 
 /**
- * Допоміжна функція для безпечного збереження контактів у файл
- * @private
- * @param {Array} contacts - Масив контактів для збереження
- * @throws {Error} - Помилки запису файлу з деталізованими повідомленнями
- */
-const saveContactsToFile = async (contacts) => {
-  try {
-    await writeFile(
-      CONTACTS_PATH,
-      JSON.stringify(contacts, null, JSON_INDENT_SPACES),
-      JSON_ENCODING
-    );
-  } catch (error) {
-    if (error.code === FS_ERROR_CODES.ACCESS_DENIED) {
-      throw new Error(ERROR_MESSAGES.WRITE_ACCESS_DENIED);
-    } else if (error.code === FS_ERROR_CODES.NO_SPACE) {
-      throw new Error(ERROR_MESSAGES.NO_DISK_SPACE);
-    }
-    throw error;
-  }
-};
-
-/**
- * Читає всі контакти з файлу
- * Використовує безпечну обробку помилок для різних сценаріїв
+ * Читає всі контакти з бази даних PostgreSQL
+ * Використовує Sequelize для отримання даних
  *
  * @async
  * @function listContacts
  * @returns {Promise<Array<Object>>} Масив об'єктів контактів
- * @throws {Error} - Помилки читання файлу або парсингу JSON
+ * @throws {Error} - Помилки роботи з базою даних
  *
  * @example
  * const contacts = await listContacts();
- * console.log(contacts); // [{id: '1', name: 'John', email: 'john@example.com', phone: '+123456789'}]
+ * console.log(contacts); // [{id: 1, name: 'John', email: 'john@example.com', phone: '+123456789', favorite: false}]
  */
 export const listContacts = async () => {
   try {
-    const data = await readFile(CONTACTS_PATH, JSON_ENCODING);
-    return JSON.parse(data);
+    const contacts = await Contact.findAll({
+      order: [['createdAt', 'DESC']] // Сортування за датою створення (нові спочатку)
+    });
+    return contacts;
   } catch (error) {
-    if (error.code === FS_ERROR_CODES.FILE_NOT_FOUND) {
-      return []; // Файл не існує - повертаємо порожній масив
-    } else if (error instanceof SyntaxError) {
-      throw new Error(ERROR_MESSAGES.INVALID_JSON);
-    } else if (error.code === FS_ERROR_CODES.ACCESS_DENIED) {
-      throw new Error(ERROR_MESSAGES.READ_ACCESS_DENIED);
-    }
-    throw error; // Інші помилки передаємо далі
+    console.error('Помилка при отриманні списку контактів:', error.message);
+    throw new Error(ERROR_MESSAGES.DATABASE_ERROR);
   }
 };
 
 /**
  * Отримує контакт за унікальним ідентифікатором
- * Виконує безпечний пошук контакту без модифікації даних
+ * Використовує Sequelize для пошуку в базі даних
  *
  * @async
  * @function getContactById
- * @param {string} contactId - Унікальний ідентифікатор контакту
+ * @param {string|number} contactId - Унікальний ідентифікатор контакту
  * @returns {Promise<Object|null>} Об'єкт контакту або null, якщо не знайдено
- * @throws {Error} - Помилки читання файлу
+ * @throws {Error} - Помилки роботи з базою даних
  *
  * @example
- * const contact = await getContactById('123');
+ * const contact = await getContactById(123);
  * if (contact) {
  *   console.log(contact.name); // 'John Doe'
  * }
  */
 export const getContactById = async (contactId) => {
-  const contacts = await listContacts();
-  const contact = contacts.find(contact => contact.id === contactId);
-  return contact || null;
+  try {
+    const contact = await Contact.findByPk(contactId);
+    return contact;
+  } catch (error) {
+    console.error('Помилка при отриманні контакту за ID:', error.message);
+    throw new Error(ERROR_MESSAGES.DATABASE_ERROR);
+  }
 };
 
 /**
- * Видаляє контакт з колекції за ідентифікатором
- * Виконує атомарну операцію видалення з безпечним збереженням
+ * Видаляє контакт з бази даних за ідентифікатором
+ * Використовує Sequelize для атомарного видалення
  *
  * @async
  * @function removeContact
- * @param {string} contactId - Унікальний ідентифікатор контакту для видалення
+ * @param {string|number} contactId - Унікальний ідентифікатор контакту для видалення
  * @returns {Promise<Object|null>} Видалений об'єкт контакту або null, якщо не знайдено
- * @throws {Error} - Помилки читання/запису файлу
+ * @throws {Error} - Помилки роботи з базою даних
  *
  * @example
- * const deletedContact = await removeContact('123');
+ * const deletedContact = await removeContact(123);
  * if (deletedContact) {
  *   console.log(`Видалено: ${deletedContact.name}`);
  * }
  */
 export const removeContact = async (contactId) => {
-  const contacts = await listContacts();
-  const contactIndex = contacts.findIndex(contact => contact.id === contactId);
+  try {
+    const contact = await Contact.findByPk(contactId);
 
-  if (contactIndex === -1) {
-    return null; // Контакт не знайдено
+    if (!contact) {
+      return null; // Контакт не знайдено
+    }
+
+    await contact.destroy();
+    return contact;
+  } catch (error) {
+    console.error('Помилка при видаленні контакту:', error.message);
+    throw new Error(ERROR_MESSAGES.DATABASE_ERROR);
   }
-
-  const [deletedContact] = contacts.splice(contactIndex, 1);
-  await saveContactsToFile(contacts);
-
-  return deletedContact;
 };
 
 /**
- * Створює та додає новий контакт до колекції
- * Автоматично генерує унікальний ідентифікатор для нового контакту
+ * Створює та додає новий контакт до бази даних
+ * Використовує Sequelize для створення запису в PostgreSQL
  *
  * @async
  * @function addContact
@@ -148,69 +112,118 @@ export const removeContact = async (contactId) => {
  * @param {string} body.name - Ім'я контакту (обов'язкове)
  * @param {string} body.email - Email адреса контакту (обов'язкове)
  * @param {string} body.phone - Номер телефону контакту (обов'язкове)
- * @returns {Promise<Object>} Створений контакт з згенерованим ID
- * @throws {Error} - Помилки валідації або запису файлу
+ * @param {boolean} [body.favorite=false] - Статус "вибраний" (опціонально)
+ * @returns {Promise<Object>} Створений контакт з автогенерованим ID
+ * @throws {Error} - Помилки валідації або роботи з базою даних
  *
  * @example
  * const newContact = await addContact({
  *   name: 'John Doe',
  *   email: 'john@example.com',
- *   phone: '+1234567890'
+ *   phone: '+1234567890',
+ *   favorite: false
  * });
- * console.log(newContact.id); // згенерований nanoid
+ * console.log(newContact.id); // автоінкремент ID з PostgreSQL
  */
 export const addContact = async (body) => {
-  const contacts = await listContacts();
-  const newContact = {
-    id: nanoid(),
-    name: body.name,
-    email: body.email,
-    phone: body.phone
-  };
+  try {
+    const newContact = await Contact.create({
+      name: body.name,
+      email: body.email,
+      phone: body.phone,
+      favorite: body.favorite || false
+    });
 
-  contacts.push(newContact);
-  await saveContactsToFile(contacts);
+    return newContact;
+  } catch (error) {
+    // Обробка помилки унікальності email
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      throw new Error(ERROR_MESSAGES.DUPLICATE_EMAIL);
+    }
 
-  return newContact;
+    console.error('Помилка при створенні контакту:', error.message);
+    throw new Error(ERROR_MESSAGES.DATABASE_ERROR);
+  }
 };
 
 /**
  * Оновлює існуючий контакт частковими або повними даними
- * Зберігає існуючі поля, які не передані для оновлення
+ * Використовує Sequelize для оновлення в базі даних
  *
  * @async
  * @function updateContact
- * @param {string} contactId - Унікальний ідентифікатор контакту для оновлення
+ * @param {string|number} contactId - Унікальний ідентифікатор контакту для оновлення
  * @param {Object} body - Часткові дані для оновлення контакту
  * @param {string} [body.name] - Нове ім'я контакту (опціонально)
  * @param {string} [body.email] - Нова email адреса (опціонально)
  * @param {string} [body.phone] - Новий номер телефону (опціонально)
+ * @param {boolean} [body.favorite] - Новий статус favorite (опціонально)
  * @returns {Promise<Object|null>} Оновлений контакт або null, якщо не знайдено
- * @throws {Error} - Помилки валідації або запису файлу
+ * @throws {Error} - Помилки валідації або роботи з базою даних
  *
  * @example
- * const updatedContact = await updateContact('123', { name: 'Jane Doe' });
+ * const updatedContact = await updateContact(123, { name: 'Jane Doe' });
  * if (updatedContact) {
  *   console.log(updatedContact.name); // 'Jane Doe'
  *   console.log(updatedContact.email); // залишається попередній email
  * }
  */
 export const updateContact = async (contactId, body) => {
-  const contacts = await listContacts();
-  const contactIndex = contacts.findIndex(contact => contact.id === contactId);
+  try {
+    const contact = await Contact.findByPk(contactId);
 
-  if (contactIndex === -1) {
-    return null; // Контакт не знайдено
+    if (!contact) {
+      return null; // Контакт не знайдено
+    }
+
+    // Оновлюємо тільки передані поля
+    const updatedContact = await contact.update(body);
+    return updatedContact;
+  } catch (error) {
+    // Обробка помилки унікальності email
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      throw new Error(ERROR_MESSAGES.DUPLICATE_EMAIL);
+    }
+
+    console.error('Помилка при оновленні контакту:', error.message);
+    throw new Error(ERROR_MESSAGES.DATABASE_ERROR);
   }
+};
 
-  // Оновлюємо тільки передані поля, зберігаючи існуючі
-  const updatedContact = {
-    ...contacts[contactIndex],
-    ...body
-  };
+/**
+ * Оновлює статус favorite контакту
+ * Спеціальна функція для PATCH /api/contacts/:id/favorite endpoint
+ *
+ * @async
+ * @function updateStatusContact
+ * @param {string|number} contactId - Унікальний ідентифікатор контакту
+ * @param {Object} body - Дані для оновлення статусу
+ * @param {boolean} body.favorite - Новий статус favorite
+ * @returns {Promise<Object|null>} Оновлений контакт або null, якщо не знайдено
+ * @throws {Error} - Помилки валідації або роботи з базою даних
+ *
+ * @example
+ * const updatedContact = await updateStatusContact(123, { favorite: true });
+ * if (updatedContact) {
+ *   console.log(updatedContact.favorite); // true
+ * }
+ */
+export const updateStatusContact = async (contactId, body) => {
+  try {
+    const contact = await Contact.findByPk(contactId);
 
-  contacts[contactIndex] = updatedContact;
-  await saveContactsToFile(contacts);
+    if (!contact) {
+      return null; // Контакт не знайдено
+    }
 
-  return updatedContact;
+    // Оновлюємо тільки поле favorite
+    const updatedContact = await contact.update({
+      favorite: body.favorite
+    });
+
+    return updatedContact;
+  } catch (error) {
+    console.error('Помилка при оновленні статусу контакту:', error.message);
+    throw new Error(ERROR_MESSAGES.DATABASE_ERROR);
+  }
 };

@@ -89,14 +89,12 @@ describe('Contact Validation Schemas', () => {
       const partialUpdate = {
         name: 'Updated Name'
       };
-
       const { error } = contactUpdateSchema.validate(partialUpdate);
       expect(error).toBeUndefined();
     });
 
     it('should require at least one field', () => {
       const emptyUpdate = {};
-
       const { error } = contactUpdateSchema.validate(emptyUpdate);
       expect(error).toBeDefined();
       expect(error.message).toContain('хоча б одне поле');
@@ -106,7 +104,6 @@ describe('Contact Validation Schemas', () => {
       const updateWithPhone = {
         phone: '+447987654321'
       };
-
       const { error } = contactUpdateSchema.validate(updateWithPhone);
       expect(error).toBeUndefined();
     });
@@ -115,10 +112,31 @@ describe('Contact Validation Schemas', () => {
       const updateWithInvalidPhone = {
         phone: '(555) 123-4567'
       };
-
       const { error } = contactUpdateSchema.validate(updateWithInvalidPhone);
       expect(error).toBeDefined();
       expect(error.details[0].path).toContain('phone');
+    });
+  });
+
+  describe('contactFavoriteSchema', () => {
+    it('should validate valid favorite field', () => {
+      const valid = { favorite: true };
+      const { error } = contactFavoriteSchema.validate(valid);
+      expect(error).toBeUndefined();
+    });
+
+    it('should reject missing favorite field', () => {
+      const invalid = {};
+      const { error } = contactFavoriteSchema.validate(invalid);
+      expect(error).toBeDefined();
+      expect(error.details[0].path).toContain('favorite');
+    });
+
+    it('should reject non-boolean favorite', () => {
+      const invalid = { favorite: 'yes' };
+      const { error } = contactFavoriteSchema.validate(invalid);
+      expect(error).toBeDefined();
+      expect(error.details[0].path).toContain('favorite');
     });
   });
 });

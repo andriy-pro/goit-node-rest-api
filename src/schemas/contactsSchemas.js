@@ -38,17 +38,24 @@ const baseContactFields = {
     .messages({
       'string.pattern.base': 'Телефон має бути у міжнародному форматі E.164: +380671234567, +12125551234',
       'any.required': 'Телефон є обов\'язковим полем'
+    }),
+
+  favorite: Joi.boolean()
+    .messages({
+      'boolean.base': 'Поле favorite має бути булевим значенням (true або false)',
+      'any.required': 'Поле favorite є обов\'язковим для цього запиту'
     })
 };
 
 /**
  * Схема валідації для створення нового контакту (POST /api/contacts)
- * Всі поля обов'язкові (згідно з умовами завдання)
+ * Всі базові поля обов'язкові, favorite опціонально (за замовчуванням false)
  */
 export const contactCreateSchema = Joi.object({
   name: baseContactFields.name.required(),
   email: baseContactFields.email.required(),
-  phone: baseContactFields.phone.required()
+  phone: baseContactFields.phone.required(),
+  favorite: baseContactFields.favorite.optional()
 });
 
 /**
@@ -58,7 +65,16 @@ export const contactCreateSchema = Joi.object({
 export const contactUpdateSchema = Joi.object({
   name: baseContactFields.name.optional(),
   email: baseContactFields.email.optional(),
-  phone: baseContactFields.phone.optional()
+  phone: baseContactFields.phone.optional(),
+  favorite: baseContactFields.favorite.optional()
 }).min(1).messages({
   'object.min': 'Тіло запиту має містити хоча б одне поле'
+});
+
+/**
+ * Схема валідації для оновлення статусу favorite (PATCH /api/contacts/:id/favorite)
+ * Тільки поле favorite обов'язкове
+ */
+export const contactFavoriteSchema = Joi.object({
+  favorite: baseContactFields.favorite.required()
 });

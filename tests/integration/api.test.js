@@ -1,3 +1,46 @@
+  describe('PATCH /api/contacts/:id/favorite', () => {
+    beforeEach(async () => {
+      // Створюємо тестовий контакт через API
+      const response = await request(app)
+        .post('/api/contacts')
+        .send(validContactData);
+      testContactId = response.body.id;
+    });
+
+    test('✅ має оновлювати статус favorite зі статусом 200', async () => {
+      const response = await request(app)
+        .patch(`/api/contacts/${testContactId}/favorite`)
+        .send({ favorite: true })
+        .expect('Content-Type', /json/)
+        .expect(200);
+
+      expect(response.body).toHaveProperty('id', testContactId);
+      expect(response.body).toHaveProperty('favorite', true);
+    });
+
+    test('❌ має повертати 400 для невалідних даних (не boolean)', async () => {
+      const response = await request(app)
+        .patch(`/api/contacts/${testContactId}/favorite`)
+        .send({ favorite: 'yes' })
+        .expect('Content-Type', /json/)
+        .expect(400);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toContain('булевим'); // Ukrainian: "boolean"
+    });
+
+    test('❌ має повертати 404 для неіснуючого контакту', async () => {
+      const nonExistentId = nanoid();
+      const response = await request(app)
+        .patch(`/api/contacts/${nonExistentId}/favorite`)
+        .send({ favorite: true })
+        .expect('Content-Type', /json/)
+        .expect(404);
+
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toContain('Not found');
+    });
+  });
 /**
  * Інтеграційні тести для REST API ендпоінтів
  *
