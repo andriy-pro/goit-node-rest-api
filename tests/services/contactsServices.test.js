@@ -89,4 +89,50 @@ describe('Contacts Services (Sequelize)', () => {
     const invalidContact = { name: 'Only Name' };
     await expect(addContact(invalidContact)).rejects.toThrow();
   });
+
+  // Додаткові edge cases
+  test('should handle empty contact list', async () => {
+    const contacts = await listContacts();
+    expect(Array.isArray(contacts)).toBe(true);
+    expect(contacts.length).toBe(0);
+  });
+
+  test('should handle partial updates correctly', async () => {
+    const newContact = await addContact(testContact);
+    const partialUpdate = { 
+      name: 'Partial Update',
+      email: `partial-${Date.now()}@example.com`
+    };
+    const updatedContact = await updateContact(newContact.id, partialUpdate);
+    expect(updatedContact.name).toBe(partialUpdate.name);
+    expect(updatedContact.email).toBe(partialUpdate.email);
+    expect(updatedContact.phone).toBe(testContact.phone); // не змінився
+  });
+
+  test('should handle favorite status toggle', async () => {
+    const newContact = await addContact(testContact);
+    
+    // Встановлюємо favorite = true
+    const updatedContact1 = await updateStatusContact(newContact.id, { favorite: true });
+    expect(updatedContact1.favorite).toBe(true);
+    
+    // Встановлюємо favorite = false
+    const updatedContact2 = await updateStatusContact(newContact.id, { favorite: false });
+    expect(updatedContact2.favorite).toBe(false);
+  });
+
+  test('should return null when updating non-existent contact', async () => {
+    const result = await updateContact(999, { name: 'Test' });
+    expect(result).toBeNull();
+  });
+
+  test('should return null when updating status of non-existent contact', async () => {
+    const result = await updateStatusContact(999, { favorite: true });
+    expect(result).toBeNull();
+  });
+
+  test('should return null when deleting non-existent contact', async () => {
+    const result = await removeContact(999);
+    expect(result).toBeNull();
+  });
 });

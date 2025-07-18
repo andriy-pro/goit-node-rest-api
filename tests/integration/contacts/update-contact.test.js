@@ -103,7 +103,7 @@ describe('PUT /api/contacts/:id', () => {
     const contact = await createTestContactInDb();
     const updateData = {
       name: 'Updated Name',
-      email: `updated-${Date.now()}@example.com`, // унікальний email
+      email: `updated-${Date.now()}-${Math.random()}@example.com`, // унікальний email
       phone: '+380991112233',
       favorite: true
     };

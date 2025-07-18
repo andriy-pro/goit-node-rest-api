@@ -1,3 +1,6 @@
+// Завантаження змінних середовища для тестів
+import 'dotenv/config';
+
 import sequelize from '../../src/db/connection.js';
 
 beforeAll(async () => {

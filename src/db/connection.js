@@ -11,35 +11,66 @@
 
 import { Sequelize } from 'sequelize';
 
-// Конфігурація підключення до PostgreSQL
-const DB_CONFIG = {
-  // URL підключення з змінних середовища або default для розробки
-  database: process.env.DB_NAME || 'db-contacts',
-  username: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || '',
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 5432,
+// Конфігурація підключення до PostgreSQL з підтримкою різних середовищ
+const getDatabaseConfig = () => {
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  const isProduction = process.env.NODE_ENV === 'production';
 
-  // Налаштування Sequelize
-  dialect: 'postgres',
-  logging: process.env.NODE_ENV === 'development' ? console.log : false,
-
-  // Налаштування пулу з'єднань
-  pool: {
-    max: 5,
-    min: 0,
-    acquire: 30000,
-    idle: 10000,
-  },
-
-  // SSL конфігурація для хмарних баз даних (Render завжди вимагає SSL)
-  dialectOptions: (process.env.DB_SSL === 'false') ? {} : {
-    ssl: {
-      require: true,
-      rejectUnauthorized: false
+  // Базові налаштування - використовуємо одну БД для всіх середовищ
+  const config = {
+    database: process.env.DB_NAME || 'db-contacts',
+    username: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || '',
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 5432,
+    dialect: 'postgres',
+    logging: isDevelopment ? console.log : false,
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000,
+      idle: 10000,
     }
+  };
+
+  // SSL конфігурація для production та тестів (якщо DB_SSL=true)
+  if (isProduction || process.env.DB_SSL === 'true') {
+    config.dialectOptions = {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false
+      },
+      keepAlive: true,
+      keepAliveInitialDelayMillis: 0
+    };
+  }
+
+  return config;
+};
+
+const DB_CONFIG = getDatabaseConfig();
+
+// Перевірка наявності обов'язкових змінних середовища (тільки для production)
+const validateEnvironment = () => {
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  if (isProduction && !process.env.DB_PASSWORD) {
+  console.error('\x1b[31m[ERROR] DB_PASSWORD не встановлено в production середовищі\x1b[0m');
+    process.exit(1);
+  }
+
+  if (isProduction && !process.env.DB_NAME) {
+  console.error('\x1b[31m[ERROR] DB_NAME не встановлено в production середовищі\x1b[0m');
+    process.exit(1);
+  }
+
+  if (isProduction && !process.env.DB_USER) {
+  console.error('\x1b[31m[ERROR] DB_USER не встановлено в production середовищі\x1b[0m');
+    process.exit(1);
   }
 };
+
+validateEnvironment();
 
 // Створення екземпляру Sequelize
 const sequelize = new Sequelize(
