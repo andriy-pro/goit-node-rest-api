@@ -1,5 +1,5 @@
 
-import { Contact } from '../../src/models/Contact.js';
+import Contact from '../../src/models/Contact.js';
 import sequelize from '../../src/db/connection.js';
 import {
   listContacts,

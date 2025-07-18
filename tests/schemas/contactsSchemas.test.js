@@ -1,4 +1,8 @@
-import { contactCreateSchema, contactUpdateSchema } from '../../src/schemas/contactsSchemas.js';
+import { 
+  contactCreateSchema, 
+  contactUpdateSchema, 
+  contactFavoriteSchema 
+} from '../../src/schemas/contactsSchemas.js';
 
 describe('Contact Validation Schemas', () => {
   describe('contactCreateSchema', () => {

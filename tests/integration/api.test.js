@@ -26,7 +26,7 @@
         .expect(400);
 
       expect(response.body).toHaveProperty('message');
-      expect(response.body.message).toContain('булевим'); // Ukrainian: "boolean"
+      expect(response.body.message).toContain('булевим');
     });
 
     test('❌ має повертати 404 для неіснуючого контакту', async () => {
@@ -47,7 +47,7 @@
  * Ці тести перевіряють повний flow від HTTP запиту до відповіді,
  * включаючи роутинг, контролери, сервіси, валідацію та middleware.
  *
- * @author GoIT Student
+ * @author Andriy Nechyporenko
  */
 
 import request from 'supertest';
