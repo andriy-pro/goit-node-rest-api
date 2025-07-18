@@ -18,6 +18,7 @@ import {
   updateContact,
   updateContactStatus,
 } from "../controllers/contactsControllers.js";
+import validateId from "../middlewares/validateId.js";
 import validateBody from "../helpers/validateBody.js";
 import {
   contactCreateSchema,
@@ -31,18 +32,18 @@ const contactsRouter = express.Router();
 contactsRouter.get("/", getAllContacts);
 
 // GET /api/contacts/:id - отримати контакт за ID
-contactsRouter.get("/:id", getOneContact);
+contactsRouter.get("/:id", validateId, getOneContact);
 
 // DELETE /api/contacts/:id - видалити контакт за ID
-contactsRouter.delete("/:id", deleteContact);
+contactsRouter.delete("/:id", validateId, deleteContact);
 
 // POST /api/contacts - створити новий контакт (з валідацією)
 contactsRouter.post("/", validateBody(contactCreateSchema), createContact);
 
 // PUT /api/contacts/:id - оновити контакт за ID (з валідацією)
-contactsRouter.put("/:id", validateBody(contactUpdateSchema), updateContact);
+contactsRouter.put("/:id", validateId, validateBody(contactUpdateSchema), updateContact);
 
 // PATCH /api/contacts/:id/favorite - оновити статус favorite контакту (з валідацією)
-contactsRouter.patch("/:id/favorite", validateBody(contactFavoriteSchema), updateContactStatus);
+contactsRouter.patch("/:id/favorite", validateId, validateBody(contactFavoriteSchema), updateContactStatus);
 
 export default contactsRouter;

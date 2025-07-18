@@ -1,14 +1,16 @@
 {
   "testEnvironment": "node",
   "transform": {},
-  "testMatch": [
-    "**/tests/**/*.test.js"
+  "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.js$",
+  "moduleFileExtensions": [
+    "js",
+    "json",
+    "node"
   ],
-  "testPathIgnorePatterns": [
-    "/node_modules/"
+  "reporters": [
+    "default"
   ],
-  "modulePathIgnorePatterns": [
-    "/.docs/",
-    "/.docs/trash/"
+  "setupFilesAfterEnv": [
+    "./tests/integration/setup.js"
   ]
 }

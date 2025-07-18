@@ -15,38 +15,33 @@ import cors from "cors";
 import helmet from "helmet";
 
 import contactsRouter from "./routes/contactsRouter.js";
+import errorHandler from "./middlewares/errorHandler.js";
 
 const app = express();
 
-// 🛡️ Безпека HTTP заголовків
+// Security HTTP headers
 app.use(helmet());
 
-// 📝 HTTP логування
+// HTTP logging
 app.use(morgan("tiny"));
 
-// 🌐 CORS middleware
+// CORS middleware
 app.use(cors());
 
-// 📄 JSON парсинг
+// JSON parsing
 app.use(express.json());
 
-// 🚀 API роути для контактів
+// API routes for contacts
 app.use("/api/contacts", contactsRouter);
 
-// 🚨 Глобальний обробник помилок (повертає JSON замість HTML)
-// eslint-disable-next-line no-unused-vars
-app.use((err, req, res, next) => {
-  const { status = 500, message = "Внутрішня помилка сервера" } = err;
-  res.status(status).json({
-    message
+// Handling 404 for unknown routes
+app.use((req, res) => {
+  res.status(404).json({
+    message: `Route ${req.originalUrl} not found`
   });
 });
 
-// ❌ Обробка 404 для невідомих роутів
-app.use((req, res) => {
-  res.status(404).json({
-    message: `Роут ${req.originalUrl} не знайдено`
-  });
-});
+// Centralized global error handler
+app.use(errorHandler);
 
 export default app;

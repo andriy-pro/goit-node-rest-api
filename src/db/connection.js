@@ -69,7 +69,7 @@ export const testConnection = async () => {
     await sequelize.authenticate();
     console.log('Database connection successful');
   } catch (error) {
-    console.error('Помилка підключення до бази даних:', error.message);
+    console.error('Database connection error:', error.message);
     process.exit(1);
   }
 };
@@ -86,9 +86,9 @@ export const testConnection = async () => {
 export const syncDatabase = async (options = {}) => {
   try {
     await sequelize.sync(options);
-    console.log('Моделі синхронізовані з базою даних');
+    console.log('Models are synchronized with the database');
   } catch (error) {
-    console.error('Помилка синхронізації моделей:', error.message);
+    console.error('Model synchronization error:', error.message);
     throw error;
   }
 };

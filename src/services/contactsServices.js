@@ -11,13 +11,6 @@
 
 import { Contact } from '../models/index.js';
 
-// Повідомлення про помилки
-const ERROR_MESSAGES = {
-  CONTACT_NOT_FOUND: 'Контакт не знайдено',
-  DATABASE_ERROR: 'Помилка при роботі з базою даних',
-  VALIDATION_ERROR: 'Помилка валідації даних',
-  DUPLICATE_EMAIL: 'Контакт з такою електронною адресою вже існує'
-};
 
 /**
  * Читає всі контакти з бази даних PostgreSQL
@@ -33,15 +26,10 @@ const ERROR_MESSAGES = {
  * console.log(contacts); // [{id: 1, name: 'John', email: 'john@example.com', phone: '+123456789', favorite: false}]
  */
 export const listContacts = async () => {
-  try {
-    const contacts = await Contact.findAll({
-      order: [['createdAt', 'DESC']] // Сортування за датою створення (нові спочатку)
-    });
-    return contacts;
-  } catch (error) {
-    console.error('Помилка при отриманні списку контактів:', error.message);
-    throw new Error(ERROR_MESSAGES.DATABASE_ERROR);
-  }
+  const contacts = await Contact.findAll({
+    order: [['createdAt', 'DESC']],
+  });
+  return contacts;
 };
 
 /**
@@ -61,13 +49,8 @@ export const listContacts = async () => {
  * }
  */
 export const getContactById = async (contactId) => {
-  try {
-    const contact = await Contact.findByPk(contactId);
-    return contact;
-  } catch (error) {
-    console.error('Помилка при отриманні контакту за ID:', error.message);
-    throw new Error(ERROR_MESSAGES.DATABASE_ERROR);
-  }
+  const contact = await Contact.findByPk(contactId);
+  return contact;
 };
 
 /**
@@ -87,19 +70,11 @@ export const getContactById = async (contactId) => {
  * }
  */
 export const removeContact = async (contactId) => {
-  try {
-    const contact = await Contact.findByPk(contactId);
-
-    if (!contact) {
-      return null; // Контакт не знайдено
-    }
-
+  const contact = await Contact.findByPk(contactId);
+  if (contact) {
     await contact.destroy();
-    return contact;
-  } catch (error) {
-    console.error('Помилка при видаленні контакту:', error.message);
-    throw new Error(ERROR_MESSAGES.DATABASE_ERROR);
   }
+  return contact;
 };
 
 /**
@@ -126,24 +101,8 @@ export const removeContact = async (contactId) => {
  * console.log(newContact.id); // автоінкремент ID з PostgreSQL
  */
 export const addContact = async (body) => {
-  try {
-    const newContact = await Contact.create({
-      name: body.name,
-      email: body.email,
-      phone: body.phone,
-      favorite: body.favorite || false
-    });
-
-    return newContact;
-  } catch (error) {
-    // Обробка помилки унікальності email
-    if (error.name === 'SequelizeUniqueConstraintError') {
-      throw new Error(ERROR_MESSAGES.DUPLICATE_EMAIL);
-    }
-
-    console.error('Помилка при створенні контакту:', error.message);
-    throw new Error(ERROR_MESSAGES.DATABASE_ERROR);
-  }
+  const newContact = await Contact.create(body);
+  return newContact;
 };
 
 /**
@@ -169,25 +128,12 @@ export const addContact = async (body) => {
  * }
  */
 export const updateContact = async (contactId, body) => {
-  try {
-    const contact = await Contact.findByPk(contactId);
-
-    if (!contact) {
-      return null; // Контакт не знайдено
-    }
-
-    // Оновлюємо тільки передані поля
+  const contact = await Contact.findByPk(contactId);
+  if (contact) {
     const updatedContact = await contact.update(body);
     return updatedContact;
-  } catch (error) {
-    // Обробка помилки унікальності email
-    if (error.name === 'SequelizeUniqueConstraintError') {
-      throw new Error(ERROR_MESSAGES.DUPLICATE_EMAIL);
-    }
-
-    console.error('Помилка при оновленні контакту:', error.message);
-    throw new Error(ERROR_MESSAGES.DATABASE_ERROR);
   }
+  return null;
 };
 
 /**
@@ -209,21 +155,12 @@ export const updateContact = async (contactId, body) => {
  * }
  */
 export const updateStatusContact = async (contactId, body) => {
-  try {
-    const contact = await Contact.findByPk(contactId);
-
-    if (!contact) {
-      return null; // Контакт не знайдено
-    }
-
-    // Оновлюємо тільки поле favorite
+  const contact = await Contact.findByPk(contactId);
+  if (contact) {
     const updatedContact = await contact.update({
-      favorite: body.favorite
+      favorite: body.favorite,
     });
-
     return updatedContact;
-  } catch (error) {
-    console.error('Помилка при оновленні статусу контакту:', error.message);
-    throw new Error(ERROR_MESSAGES.DATABASE_ERROR);
   }
+  return null;
 };

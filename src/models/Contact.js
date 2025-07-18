@@ -30,11 +30,11 @@ const Contact = sequelize.define(
       allowNull: false,
       validate: {
         notEmpty: {
-          msg: "Ім'я не може бути порожнім"
+          msg: "Name cannot be empty"
         },
         len: {
           args: [2, 50],
-          msg: "Ім'я має містити від 2 до 50 символів"
+          msg: "Name must be between 2 and 50 characters"
         }
       }
     },
@@ -42,14 +42,14 @@ const Contact = sequelize.define(
       type: DataTypes.STRING(100),
       allowNull: false,
       unique: {
-        msg: 'Контакт з такою електронною адресою вже існує'
+        msg: 'A contact with this email address already exists'
       },
       validate: {
         isEmail: {
-          msg: 'Некоректний формат електронної пошти'
+          msg: 'Invalid email format'
         },
         notEmpty: {
-          msg: 'Електронна адреса не може бути порожньою'
+          msg: 'Email address cannot be empty'
         }
       }
     },
@@ -58,11 +58,11 @@ const Contact = sequelize.define(
       allowNull: false,
       validate: {
         notEmpty: {
-          msg: 'Номер телефону не може бути порожнім'
+          msg: 'Phone number cannot be empty'
         },
         is: {
           args: /^\+[1-9]\d{6,14}$/,
-          msg: 'Телефон має бути у міжнародному форматі E.164'
+          msg: 'Phone must be in E.164 international format'
         }
       }
     },
@@ -72,7 +72,7 @@ const Contact = sequelize.define(
       allowNull: false,
       validate: {
         isBoolean: {
-          msg: 'Поле favorite має бути булевим значенням'
+          msg: 'The favorite field must be a boolean value'
         }
       }
     }

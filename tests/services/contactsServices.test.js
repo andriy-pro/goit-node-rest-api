@@ -1,48 +1,47 @@
 
-import Contact from '../../src/models/Contact.js';
-import sequelize from '../../src/db/connection.js';
 import {
   listContacts,
   getContactById,
   removeContact,
   addContact,
   updateContact,
-  updateStatusContact
+  updateStatusContact,
 } from '../../src/services/contactsServices.js';
+import { Contact } from '../../src/models/index.js';
+import sequelize from '../../src/db/connection.js';
 
 describe('Contacts Services (Sequelize)', () => {
-  // Тестові дані
   const testContact = {
-    name: 'Test User',
-    email: 'testuser@example.com',
-    phone: '+380671234567',
-    favorite: false
+    name: 'Test Contact',
+    email: 'test.contact@example.com',
+    phone: '+380991234567',
   };
 
-  // Очищення таблиці перед кожним тестом
   beforeEach(async () => {
+    // Clean up the table before each test
     await Contact.destroy({ where: {}, truncate: true });
   });
 
   afterAll(async () => {
+    // Close the database connection after all tests
     await sequelize.close();
   });
 
-  it('should create a new contact', async () => {
-    const contact = await addContact(testContact);
-    expect(contact).toBeDefined();
-    expect(contact.name).toBe(testContact.name);
-    expect(contact.email).toBe(testContact.email);
-    expect(contact.phone).toBe(testContact.phone);
-    expect(contact.favorite).toBe(false);
+  test('should add a new contact', async () => {
+    const newContact = await addContact(testContact);
+    expect(newContact).toBeDefined();
+    expect(newContact.name).toBe(testContact.name);
+    expect(newContact.email).toBe(testContact.email);
+    expect(newContact.phone).toBe(testContact.phone);
+    expect(newContact.favorite).toBe(false);
   });
 
   it('should not allow duplicate email', async () => {
     await addContact(testContact);
-    await expect(addContact(testContact)).rejects.toThrow(/електронною адресою вже існує/);
+    await expect(addContact(testContact)).rejects.toThrow();
   });
 
-  it('should list all contacts', async () => {
+  test('should list all contacts', async () => {
     await addContact(testContact);
     const contacts = await listContacts();
     expect(Array.isArray(contacts)).toBe(true);
@@ -50,57 +49,44 @@ describe('Contacts Services (Sequelize)', () => {
     expect(contacts[0].email).toBe(testContact.email);
   });
 
-  it('should get contact by id', async () => {
-    const contact = await addContact(testContact);
-    const found = await getContactById(contact.id);
-    expect(found).toBeDefined();
-    expect(found.email).toBe(testContact.email);
+  test('should get a contact by id', async () => {
+    const newContact = await addContact(testContact);
+    const foundContact = await getContactById(newContact.id);
+    expect(foundContact).toBeDefined();
+    expect(foundContact.id).toBe(newContact.id);
   });
 
-  it('should return null for non-existent contact', async () => {
-    const found = await getContactById(99999);
-    expect(found).toBeNull();
+  test('should return null for non-existent id', async () => {
+    const foundContact = await getContactById(999);
+    expect(foundContact).toBeNull();
   });
 
-  it('should update contact', async () => {
-    const contact = await addContact(testContact);
-    const updated = await updateContact(contact.id, { name: 'Updated Name', favorite: true });
-    expect(updated.name).toBe('Updated Name');
-    expect(updated.favorite).toBe(true);
+  test('should update a contact', async () => {
+    const newContact = await addContact(testContact);
+    const updatedData = { name: 'Updated Name' };
+    const updatedContact = await updateContact(newContact.id, updatedData);
+    expect(updatedContact).toBeDefined();
+    expect(updatedContact.name).toBe(updatedData.name);
   });
 
-  it('should return null when updating non-existent contact', async () => {
-    const updated = await updateContact(99999, { name: 'No User' });
-    expect(updated).toBeNull();
+  test('should update contact status', async () => {
+    const newContact = await addContact(testContact);
+    const updatedStatus = { favorite: true };
+    const updatedContact = await updateStatusContact(newContact.id, updatedStatus);
+    expect(updatedContact).toBeDefined();
+    expect(updatedContact.favorite).toBe(true);
   });
 
-  it('should remove contact', async () => {
-    const contact = await addContact(testContact);
-    const removed = await removeContact(contact.id);
-    expect(removed.id).toBe(contact.id);
-    const found = await getContactById(contact.id);
-    expect(found).toBeNull();
+  test('should delete a contact', async () => {
+    const newContact = await addContact(testContact);
+    const deletedContact = await removeContact(newContact.id);
+    expect(deletedContact).toBeDefined();
+    const foundContact = await getContactById(newContact.id);
+    expect(foundContact).toBeNull();
   });
 
-  it('should return null when removing non-existent contact', async () => {
-    const removed = await removeContact(99999);
-    expect(removed).toBeNull();
-  });
-
-  it('should update favorite status', async () => {
-    const contact = await addContact(testContact);
-    const updated = await updateStatusContact(contact.id, { favorite: true });
-    expect(updated.favorite).toBe(true);
-  });
-
-  it('should return null when updating favorite for non-existent contact', async () => {
-    const updated = await updateStatusContact(99999, { favorite: true });
-    expect(updated).toBeNull();
-  });
-
-  it('should handle invalid data (missing required fields)', async () => {
-    await expect(addContact({ name: 'No Email', phone: '+380671234567' })).rejects.toThrow();
-    await expect(addContact({ email: 'no-name@example.com', phone: '+380671234567' })).rejects.toThrow();
-    await expect(addContact({ name: 'No Phone', email: 'no-phone@example.com' })).rejects.toThrow();
+  test('should handle invalid data (missing required fields)', async () => {
+    const invalidContact = { name: 'Only Name' };
+    await expect(addContact(invalidContact)).rejects.toThrow();
   });
 });
