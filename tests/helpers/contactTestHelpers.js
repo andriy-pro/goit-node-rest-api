@@ -31,6 +31,16 @@ export const createTestContact = async (user, contactData = {}) => {
 };
 
 /**
+ * Створює контакт для користувача (аліас для createTestContact)
+ * @param {Object} user - Користувач (власник контакту)
+ * @param {Object} contactData - Додаткові дані контакту
+ * @returns {Promise<Object>} Створений контакт
+ */
+export const createContact = async (user, contactData = {}) => {
+  return await createTestContact(user, contactData);
+};
+
+/**
  * Створює кілька тестових контактів для користувача
  * @param {Object} user - Користувач (власник контактів)
  * @param {number} count - Кількість контактів для створення

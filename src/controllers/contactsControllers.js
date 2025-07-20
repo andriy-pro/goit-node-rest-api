@@ -19,20 +19,55 @@ import {
 import HttpError from "../helpers/HttpError.js";
 
 /**
- * Отримати список всіх контактів користувача
- * GET /api/contacts
+ * Отримати список контактів користувача з підтримкою пагінації та фільтрації
+ * GET /api/contacts?page=1&limit=20&favorite=true
  *
  * @async
  * @function getAllContacts
  * @param {Object} req - Express request object
  * @param {Object} req.user - Користувач з middleware аутентифікації
+ * @param {Object} req.query - Query параметри для пагінації та фільтрації
+ * @param {string} [req.query.page=1] - Номер сторінки
+ * @param {string} [req.query.limit=20] - Кількість контактів на сторінці
+ * @param {string} [req.query.favorite] - Фільтр по статусу favorite (true/false)
  * @param {Object} res - Express response object
- * @returns {Promise<void>} HTTP відповідь з списком контактів
+ * @returns {Promise<void>} HTTP відповідь з контактами та метаданими пагінації
  */
 export const getAllContacts = async (req, res, next) => {
   try {
-    const contacts = await listContacts(req.user.id);
-    res.status(200).json(contacts);
+    const { page, limit, favorite } = req.query;
+    
+    // Парсимо та валідуємо параметри
+    const options = {};
+    
+    if (page) {
+      const pageNum = parseInt(page);
+      if (pageNum < 1) {
+        throw HttpError(400, "Page must be a positive number");
+      }
+      options.page = pageNum;
+    }
+    
+    if (limit) {
+      const limitNum = parseInt(limit);
+      if (limitNum < 1 || limitNum > 100) {
+        throw HttpError(400, "Limit must be between 1 and 100");
+      }
+      options.limit = limitNum;
+    }
+    
+    if (favorite !== undefined) {
+      if (favorite === 'true') {
+        options.favorite = true;
+      } else if (favorite === 'false') {
+        options.favorite = false;
+      } else {
+        throw HttpError(400, "Favorite must be 'true' or 'false'");
+      }
+    }
+    
+    const result = await listContacts(req.user.id, options);
+    res.status(200).json(result);
   } catch (error) {
     next(error);
   }

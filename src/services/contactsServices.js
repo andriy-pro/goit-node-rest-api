@@ -13,25 +13,74 @@ import { Contact } from '../models/index.js';
 
 
 /**
- * Читає всі контакти з бази даних PostgreSQL для конкретного користувача
- * Використовує Sequelize для отримання даних з фільтрацією по owner
+ * Отримує список контактів для конкретного користувача з підтримкою пагінації та фільтрації
+ * Використовує Sequelize для запиту до PostgreSQL з фільтрацією по власнику
  *
  * @async
  * @function listContacts
  * @param {number} ownerId - ID користувача-власника контактів
- * @returns {Promise<Array<Object>>} Масив об'єктів контактів
+ * @param {Object} [options={}] - Опції для пагінації та фільтрації
+ * @param {number} [options.page=1] - Номер сторінки (починається з 1)
+ * @param {number} [options.limit=20] - Кількість контактів на сторінці
+ * @param {boolean} [options.favorite] - Фільтр по статусу favorite (true/false)
+ * @returns {Promise<Object>} Об'єкт з контактами та метаданими пагінації
  * @throws {Error} - Помилки роботи з базою даних
  *
  * @example
- * const contacts = await listContacts(userId);
- * console.log(contacts); // [{id: 1, name: 'John', email: 'john@example.com', phone: '+123456789', favorite: false}]
+ * // Отримати першу сторінку з 10 контактами
+ * const result = await listContacts(userId, { page: 1, limit: 10 });
+ * console.log(result.contacts); // масив контактів
+ * console.log(result.pagination); // метадані пагінації
+ *
+ * // Отримати тільки favorite контакти
+ * const favorites = await listContacts(userId, { favorite: true });
+ *
+ * // Отримати другу сторінку з фільтрацією
+ * const page2 = await listContacts(userId, { page: 2, limit: 5, favorite: false });
  */
-export const listContacts = async (ownerId) => {
+export const listContacts = async (ownerId, options = {}) => {
+  const { page = 1, limit = 20, favorite } = options;
+  
+  // Базові умови запиту
+  const whereCondition = { owner: ownerId };
+  
+  // Додаємо фільтр по favorite, якщо вказано
+  if (favorite !== undefined) {
+    whereCondition.favorite = favorite;
+  }
+  
+  // Розраховуємо offset для пагінації
+  const offset = (page - 1) * limit;
+  
+  // Отримуємо контакти з пагінацією
   const contacts = await Contact.findAll({
-    where: { owner: ownerId },
+    where: whereCondition,
     order: [['createdAt', 'DESC']],
+    limit: parseInt(limit),
+    offset: parseInt(offset),
   });
-  return contacts;
+  
+  // Отримуємо загальну кількість контактів для розрахунку метаданих
+  const totalCount = await Contact.count({
+    where: whereCondition
+  });
+  
+  // Розраховуємо метадані пагінації
+  const totalPages = Math.ceil(totalCount / limit);
+  const hasNextPage = page < totalPages;
+  const hasPrevPage = page > 1;
+  
+  return {
+    contacts,
+    pagination: {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      totalCount,
+      totalPages,
+      hasNextPage,
+      hasPrevPage
+    }
+  };
 };
 
 /**

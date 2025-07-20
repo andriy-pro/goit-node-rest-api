@@ -26,7 +26,8 @@ import {
   createUpdateData,
   createContactData,
   expectContactDeleted,
-  expectContactExists
+  expectContactExists,
+  createContact
 } from '../../helpers/contactTestHelpers.js';
 
 describe('Protected Contact Routes (Optimized)', () => {
@@ -70,9 +71,11 @@ describe('Protected Contact Routes (Optimized)', () => {
         .set('Authorization', `Bearer ${token1}`)
         .expect(200);
 
-      expect(response1.body).toHaveLength(1);
-      expect(response1.body[0].id).toBe(user1Contact.id);
-      expect(response1.body[0].name).toBe('User 1 Contact');
+      expect(response1.body).toHaveProperty('contacts');
+      expect(response1.body).toHaveProperty('pagination');
+      expect(response1.body.contacts).toHaveLength(1);
+      expect(response1.body.contacts[0].id).toBe(user1Contact.id);
+      expect(response1.body.contacts[0].name).toBe('User 1 Contact');
 
       // Користувач 2 повинен бачити тільки свої контакти
       const response2 = await request(app)
@@ -80,9 +83,11 @@ describe('Protected Contact Routes (Optimized)', () => {
         .set('Authorization', `Bearer ${token2}`)
         .expect(200);
 
-      expect(response2.body).toHaveLength(1);
-      expect(response2.body[0].id).toBe(user2Contact.id);
-      expect(response2.body[0].name).toBe('User 2 Contact');
+      expect(response2.body).toHaveProperty('contacts');
+      expect(response2.body).toHaveProperty('pagination');
+      expect(response2.body.contacts).toHaveLength(1);
+      expect(response2.body.contacts[0].id).toBe(user2Contact.id);
+      expect(response2.body.contacts[0].name).toBe('User 2 Contact');
     });
 
     it('should return empty array for user with no contacts', async () => {
@@ -91,7 +96,10 @@ describe('Protected Contact Routes (Optimized)', () => {
         .set('Authorization', `Bearer ${token1}`)
         .expect(200);
 
-      expect(response.body).toHaveLength(0);
+      expect(response.body).toHaveProperty('contacts');
+      expect(response.body).toHaveProperty('pagination');
+      expect(response.body.contacts).toHaveLength(0);
+      expect(response.body.pagination.totalCount).toBe(0);
     });
   });
 
@@ -322,6 +330,144 @@ describe('Protected Contact Routes (Optimized)', () => {
         .expect(404);
 
       expect(response.body.message).toBe('Not found');
+    });
+  });
+
+  describe('GET /api/contacts - Pagination and Filtering', () => {
+    beforeEach(async () => {
+      // Створюємо кілька контактів для тестування пагінації
+      await createContact(user1, {
+        name: 'Contact 1',
+        email: 'contact1@example.com',
+        phone: '+380991111111',
+        favorite: true
+      });
+      await createContact(user1, {
+        name: 'Contact 2',
+        email: 'contact2@example.com',
+        phone: '+380992222222',
+        favorite: false
+      });
+      await createContact(user1, {
+        name: 'Contact 3',
+        email: 'contact3@example.com',
+        phone: '+380993333333',
+        favorite: true
+      });
+      await createContact(user1, {
+        name: 'Contact 4',
+        email: 'contact4@example.com',
+        phone: '+380994444444',
+        favorite: false
+      });
+    });
+
+    it('should support pagination with default parameters', async () => {
+      const response = await request(app)
+        .get('/api/contacts')
+        .set('Authorization', `Bearer ${token1}`)
+        .expect(200);
+
+      expect(response.body).toHaveProperty('contacts');
+      expect(response.body).toHaveProperty('pagination');
+      expect(response.body.pagination.page).toBe(1);
+      expect(response.body.pagination.limit).toBe(20);
+      expect(response.body.pagination.totalCount).toBe(4);
+      expect(response.body.pagination.totalPages).toBe(1);
+      expect(response.body.pagination.hasNextPage).toBe(false);
+      expect(response.body.pagination.hasPrevPage).toBe(false);
+    });
+
+    it('should support custom pagination parameters', async () => {
+      const response = await request(app)
+        .get('/api/contacts?page=1&limit=2')
+        .set('Authorization', `Bearer ${token1}`)
+        .expect(200);
+
+      expect(response.body.contacts).toHaveLength(2);
+      expect(response.body.pagination.page).toBe(1);
+      expect(response.body.pagination.limit).toBe(2);
+      expect(response.body.pagination.totalCount).toBe(4);
+      expect(response.body.pagination.totalPages).toBe(2);
+      expect(response.body.pagination.hasNextPage).toBe(true);
+      expect(response.body.pagination.hasPrevPage).toBe(false);
+    });
+
+    it('should support second page pagination', async () => {
+      const response = await request(app)
+        .get('/api/contacts?page=2&limit=2')
+        .set('Authorization', `Bearer ${token1}`)
+        .expect(200);
+
+      expect(response.body.contacts).toHaveLength(2);
+      expect(response.body.pagination.page).toBe(2);
+      expect(response.body.pagination.hasNextPage).toBe(false);
+      expect(response.body.pagination.hasPrevPage).toBe(true);
+    });
+
+    it('should filter by favorite=true', async () => {
+      const response = await request(app)
+        .get('/api/contacts?favorite=true')
+        .set('Authorization', `Bearer ${token1}`)
+        .expect(200);
+
+      expect(response.body.contacts).toHaveLength(2);
+      response.body.contacts.forEach(contact => {
+        expect(contact.favorite).toBe(true);
+      });
+      expect(response.body.pagination.totalCount).toBe(2);
+    });
+
+    it('should filter by favorite=false', async () => {
+      const response = await request(app)
+        .get('/api/contacts?favorite=false')
+        .set('Authorization', `Bearer ${token1}`)
+        .expect(200);
+
+      expect(response.body.contacts).toHaveLength(2);
+      response.body.contacts.forEach(contact => {
+        expect(contact.favorite).toBe(false);
+      });
+      expect(response.body.pagination.totalCount).toBe(2);
+    });
+
+    it('should combine pagination and filtering', async () => {
+      const response = await request(app)
+        .get('/api/contacts?page=1&limit=1&favorite=true')
+        .set('Authorization', `Bearer ${token1}`)
+        .expect(200);
+
+      expect(response.body.contacts).toHaveLength(1);
+      expect(response.body.contacts[0].favorite).toBe(true);
+      expect(response.body.pagination.totalCount).toBe(2);
+      expect(response.body.pagination.totalPages).toBe(2);
+    });
+
+    it('should return 400 for invalid page parameter', async () => {
+      const response = await request(app)
+        .get('/api/contacts?page=0')
+        .set('Authorization', `Bearer ${token1}`)
+        .expect(400);
+
+      expect(response.body.message).toBe('Page must be a positive number');
+    });
+
+    it('should return 400 for invalid limit parameter', async () => {
+      const response = await request(app)
+        .get('/api/contacts?limit=101')
+        .set('Authorization', `Bearer ${token1}`)
+        .expect(400);
+
+      expect(response.body.message).toBe('Limit must be between 1 and 100');
+    });
+
+    it('should return 400 for invalid favorite parameter', async () => {
+      const response = await request(app)
+        .get('/api/contacts?favorite=invalid')
+        .set('Authorization', `Bearer ${token1}`)
+        .expect(400);
+
+      expect(response.body.message).toBe("Favorite must be 'true' or 'false'");
     });
   });
 }); 
