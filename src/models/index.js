@@ -11,10 +11,12 @@
 
 import sequelize, { testConnection, syncDatabase } from '../db/connection.js';
 import Contact from './Contact.js';
+import User from './User.js';
 
 // Об'єкт з усіма моделями для зручного імпорту
 const models = {
   Contact,
+  User,
   sequelize,
   testConnection,
   syncDatabase
@@ -47,5 +49,5 @@ export const initializeModels = async () => {
 };
 
 // Експорт моделей
-export { Contact };
+export { Contact, User };
 export default models;
