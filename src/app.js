@@ -15,6 +15,7 @@ import cors from "cors";
 import helmet from "helmet";
 
 import contactsRouter from "./routes/contactsRouter.js";
+import authRouter from "./routes/authRouter.js";
 import errorHandler from "./middlewares/errorHandler.js";
 
 const app = express();
@@ -33,6 +34,9 @@ app.use(express.json());
 
 // API routes for contacts
 app.use("/api/contacts", contactsRouter);
+
+// API routes for authentication
+app.use("/api/auth", authRouter);
 
 // Handling 404 for unknown routes
 app.use((req, res) => {
