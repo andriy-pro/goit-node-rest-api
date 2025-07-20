@@ -23,6 +23,24 @@ const models = {
 };
 
 /**
+ * Налаштування зв'язків між моделями
+ */
+const setupAssociations = () => {
+  // User has many Contacts (one-to-many)
+  User.hasMany(Contact, {
+    foreignKey: 'owner',
+    as: 'contacts',
+    onDelete: 'CASCADE'
+  });
+
+  // Contact belongs to User (many-to-one)
+  Contact.belongsTo(User, {
+    foreignKey: 'owner',
+    as: 'user'
+  });
+};
+
+/**
  * Ініціалізація всіх моделей та їх зв'язків
  * Виконується при запуску додатка
  *
@@ -32,6 +50,9 @@ const models = {
  */
 export const initializeModels = async () => {
   try {
+    // Налаштовуємо зв'язки між моделями
+    setupAssociations();
+
     // Тестування підключення
     await testConnection();
 

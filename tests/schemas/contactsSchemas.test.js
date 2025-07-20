@@ -15,6 +15,7 @@ const createTestContact = (overrides = {}) => ({
   name: 'Test User',
   email: 'test@example.com',
   phone: '+380991234567',
+  owner: 1,
   ...overrides
 });
 
@@ -30,10 +31,12 @@ describe('Contact Validation Schemas', () => {
       const missingName = createTestContact({ name: undefined });
       const missingEmail = createTestContact({ email: undefined });
       const missingPhone = createTestContact({ phone: undefined });
+      const missingOwner = createTestContact({ owner: undefined });
 
       expect(contactCreateSchema.validate(missingName).error).toBeDefined();
       expect(contactCreateSchema.validate(missingEmail).error).toBeDefined();
       expect(contactCreateSchema.validate(missingPhone).error).toBeDefined();
+      expect(contactCreateSchema.validate(missingOwner).error).toBeDefined();
     });
 
     it('should validate email format', () => {
@@ -76,11 +79,19 @@ describe('Contact Validation Schemas', () => {
 
     it('should handle special characters in name', () => {
       const allowedNames = ['John-Doe', 'Mary Jane', "O'Connor"];
-      
+
       allowedNames.forEach(name => {
         const contact = createTestContact({ name });
         expect(contactCreateSchema.validate(contact).error).toBeUndefined();
       });
+    });
+
+    it('should validate owner field is integer', () => {
+      const validOwner = createTestContact({ owner: 1 });
+      const invalidOwner = createTestContact({ owner: 'not-a-number' });
+
+      expect(contactCreateSchema.validate(validOwner).error).toBeUndefined();
+      expect(contactCreateSchema.validate(invalidOwner).error).toBeDefined();
     });
   });
 

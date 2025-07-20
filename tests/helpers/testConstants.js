@@ -3,27 +3,46 @@
  */
 
 import Contact from '../../src/models/Contact.js';
+import User from '../../src/models/User.js';
+
+/**
+ * Creates a test user for contact ownership tests.
+ * @param {object} overrides - Object to override default user data.
+ * @returns {Promise<object>} The created user instance.
+ */
+export const createTestUser = async (overrides = {}) => {
+  const userData = {
+    email: `test-user-${Date.now()}@example.com`,
+    password: 'testpassword123',
+    subscription: 'starter',
+    ...overrides,
+  };
+  return await User.create(userData);
+};
 
 /**
  * Creates a valid test contact object with unique email and phone.
  * @param {object} overrides - Object to override default contact data.
+ * @param {number} ownerId - The owner ID for the contact.
  * @returns {object} The contact data object.
  */
-export const createTestContact = (overrides = {}) => ({
+export const createTestContact = (overrides = {}, ownerId = 1) => ({
   name: 'Test User',
   email: `test-${Date.now()}@example.com`,
   phone: `+38099${Math.floor(1000000 + Math.random() * 9000000)}`,
   favorite: false,
+  owner: ownerId,
   ...overrides,
 });
 
 /**
  * Creates a test contact in the database and returns the created contact instance.
  * @param {object} overrides - Object to override default contact data.
+ * @param {number} ownerId - The owner ID for the contact.
  * @returns {Promise<object>} The created contact instance from database.
  */
-export const createTestContactInDb = async (overrides = {}) => {
-  const contactData = createTestContact(overrides);
+export const createTestContactInDb = async (overrides = {}, ownerId = 1) => {
+  const contactData = createTestContact(overrides, ownerId);
   return await Contact.create(contactData);
 };
 

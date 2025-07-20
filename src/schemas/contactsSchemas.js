@@ -45,6 +45,16 @@ const baseContactFields = {
     .messages({
       'boolean.base': 'Favorite field must be a boolean value (true or false)',
       'any.required': 'Favorite field is required for this request'
+    }),
+
+  owner: Joi.number()
+    .integer()
+    .positive()
+    .messages({
+      'number.base': 'Owner must be a number',
+      'number.integer': 'Owner must be an integer',
+      'number.positive': 'Owner must be a positive number',
+      'any.required': 'Owner is a required field'
     })
 };
 
@@ -56,7 +66,8 @@ export const contactCreateSchema = Joi.object({
   name: baseContactFields.name.required(),
   email: baseContactFields.email.required(),
   phone: baseContactFields.phone.required(),
-  favorite: baseContactFields.favorite.optional()
+  favorite: baseContactFields.favorite.optional(),
+  owner: baseContactFields.owner.required()
 });
 
 /**
@@ -67,7 +78,8 @@ export const contactUpdateSchema = Joi.object({
   name: baseContactFields.name.required(),
   email: baseContactFields.email.required(),
   phone: baseContactFields.phone.required(),
-  favorite: baseContactFields.favorite.optional()
+  favorite: baseContactFields.favorite.optional(),
+  owner: baseContactFields.owner.required()
 });
 
 /**

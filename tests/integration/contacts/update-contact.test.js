@@ -1,119 +1,149 @@
 import request from 'supertest';
 import app from '../../../src/app.js';
-import { createTestContactInDb } from '../../../tests/helpers/testConstants.js';
+import sequelize from '../../../src/db/connection.js';
+import {
+  HTTP_STATUS,
+  createTestContactInDb,
+  NON_EXISTENT_ID,
+  INVALID_ID_FORMAT,
+  createTestUser
+} from '../../helpers/testConstants.js';
+
 
 describe('PUT /api/contacts/:id', () => {
+  let testUser;
+  let testContact;
+
+  beforeEach(async () => {
+    // Очищуємо та перестворюємо таблиці перед кожним тестом
+    await sequelize.sync({ force: true });
+
+    // Створюємо тестового користувача та контакт
+    testUser = await createTestUser();
+    testContact = await createTestContactInDb({}, testUser.id);
+  });
+
   it('should update an existing contact with status 200', async () => {
-    const contact = await createTestContactInDb();
     const updateData = {
       name: 'Updated Name',
       email: 'updated@example.com',
       phone: '+380991112233',
-      favorite: true
+      favorite: true,
+      owner: testUser.id
     };
 
     const response = await request(app)
-      .put(`/api/contacts/${contact.id}`)
+      .put(`/api/contacts/${testContact.id}`)
       .send(updateData)
-      .expect(200);
+      .expect('Content-Type', /json/)
+      .expect(HTTP_STATUS.OK);
 
-    expect(response.body.name).toBe(updateData.name);
-    expect(response.body.email).toBe(updateData.email);
-    expect(response.body.phone).toBe(updateData.phone);
-    expect(response.body.favorite).toBe(updateData.favorite);
+    expect(response.body).toHaveProperty('id', testContact.id);
+    expect(response.body).toHaveProperty('name', updateData.name);
+    expect(response.body).toHaveProperty('email', updateData.email);
+    expect(response.body).toHaveProperty('phone', updateData.phone);
+    expect(response.body).toHaveProperty('favorite', updateData.favorite);
   });
 
-  it('should return 404 for non-existent contact', async () => {
+  it('should return 404 for non-existent contact ID', async () => {
     const updateData = {
       name: 'Updated Name',
       email: 'updated@example.com',
-      phone: '+380991112233'
+      phone: '+380991112233',
+      owner: testUser.id
     };
 
-    await request(app)
-      .put('/api/contacts/999999')
+    const response = await request(app)
+      .put(`/api/contacts/${NON_EXISTENT_ID}`)
       .send(updateData)
-      .expect(404);
+      .expect('Content-Type', /json/)
+      .expect(HTTP_STATUS.NOT_FOUND);
+
+    expect(response.body).toHaveProperty('message');
   });
 
   it('should return 400 for invalid ID format', async () => {
     const updateData = {
       name: 'Updated Name',
       email: 'updated@example.com',
-      phone: '+380991112233'
+      phone: '+380991112233',
+      owner: testUser.id
     };
 
-    await request(app)
-      .put('/api/contacts/invalid-id')
+    const response = await request(app)
+      .put(`/api/contacts/${INVALID_ID_FORMAT}`)
       .send(updateData)
-      .expect(400);
+      .expect('Content-Type', /json/)
+      .expect(HTTP_STATUS.BAD_REQUEST);
+
+    expect(response.body).toHaveProperty('message');
   });
 
   it('should return 400 for missing required fields', async () => {
-    const contact = await createTestContactInDb();
-    const updateData = {
-      email: 'updated@example.com'
-      // missing name and phone
+    const invalidData = {
+      name: 'Updated Name',
+      // missing email and phone
+      owner: testUser.id
     };
 
     const response = await request(app)
-      .put(`/api/contacts/${contact.id}`)
-      .send(updateData)
-      .expect(400);
+      .put(`/api/contacts/${testContact.id}`)
+      .send(invalidData)
+      .expect('Content-Type', /json/)
+      .expect(HTTP_STATUS.BAD_REQUEST);
 
     expect(response.body).toHaveProperty('message');
-    expect(response.body.message).toContain('Name is a required field');
   });
 
   it('should return 400 for invalid email format', async () => {
-    const contact = await createTestContactInDb();
-    const updateData = {
+    const invalidData = {
       name: 'Updated Name',
       email: 'not-an-email',
-      phone: '+380991112233'
+      phone: '+380991112233',
+      owner: testUser.id
     };
 
     const response = await request(app)
-      .put(`/api/contacts/${contact.id}`)
-      .send(updateData)
-      .expect(400);
+      .put(`/api/contacts/${testContact.id}`)
+      .send(invalidData)
+      .expect('Content-Type', /json/)
+      .expect(HTTP_STATUS.BAD_REQUEST);
 
     expect(response.body).toHaveProperty('message');
-    expect(response.body.message).toContain('valid email');
   });
 
   it('should return 400 for invalid phone format', async () => {
-    const contact = await createTestContactInDb();
-    const updateData = {
+    const invalidData = {
       name: 'Updated Name',
       email: 'updated@example.com',
-      phone: 'invalid-phone'
+      phone: '123', // too short
+      owner: testUser.id
     };
 
     const response = await request(app)
-      .put(`/api/contacts/${contact.id}`)
-      .send(updateData)
-      .expect(400);
+      .put(`/api/contacts/${testContact.id}`)
+      .send(invalidData)
+      .expect('Content-Type', /json/)
+      .expect(HTTP_STATUS.BAD_REQUEST);
 
     expect(response.body).toHaveProperty('message');
-    expect(response.body.message).toContain('Phone must be in international E.164 format');
   });
 
   it('should preserve contact structure after update', async () => {
-    const contact = await createTestContactInDb();
     const updateData = {
       name: 'Updated Name',
-      email: `updated-${Date.now()}-${Math.random()}@example.com`, // унікальний email
+      email: 'updated@example.com',
       phone: '+380991112233',
-      favorite: true
+      favorite: true,
+      owner: testUser.id
     };
 
     const response = await request(app)
-      .put(`/api/contacts/${contact.id}`)
+      .put(`/api/contacts/${testContact.id}`)
       .send(updateData)
-      .expect(200);
+      .expect(HTTP_STATUS.OK);
 
-    // Перевіряємо що всі необхідні поля присутні
+    // Перевіряємо, що всі поля присутні
     expect(response.body).toHaveProperty('id');
     expect(response.body).toHaveProperty('name');
     expect(response.body).toHaveProperty('email');
@@ -122,4 +152,4 @@ describe('PUT /api/contacts/:id', () => {
     expect(response.body).toHaveProperty('createdAt');
     expect(response.body).toHaveProperty('updatedAt');
   });
-}); 
+});

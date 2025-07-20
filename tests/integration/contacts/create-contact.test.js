@@ -1,23 +1,28 @@
 import request from 'supertest';
 import app from '../../../src/app.js';
-import { Contact } from '../../../src/models/index.js';
 import sequelize from '../../../src/db/connection.js';
-import { 
-  HTTP_STATUS, 
+import {
+  HTTP_STATUS,
   TEST_CONTACTS,
   createTestContact,
-  createUniqueEmail 
+  createUniqueEmail,
+  createTestUser
 } from '../../helpers/testConstants.js';
 
 describe('POST /api/contacts', () => {
+  let testUser;
+
   beforeEach(async () => {
-    // Очищуємо таблицю перед кожним тестом для ізоляції
-    await Contact.destroy({ where: {}, truncate: true });
+    // Очищуємо та перестворюємо таблиці перед кожним тестом
+    await sequelize.sync({ force: true });
+
+    // Створюємо тестового користувача для кожного тесту
+    testUser = await createTestUser();
   });
 
   it('should create a new contact with status 201', async () => {
-    const uniqueContactData = createTestContact();
-    
+    const uniqueContactData = createTestContact({}, testUser.id);
+
     const response = await request(app)
       .post('/api/contacts')
       .send(uniqueContactData)
@@ -35,7 +40,8 @@ describe('POST /api/contacts', () => {
     const contactData = {
       name: 'Test User',
       email: createUniqueEmail(),
-      phone: '+380991234567'
+      phone: '+380991234567',
+      owner: testUser.id
     };
 
     const response = await request(app)
@@ -48,7 +54,7 @@ describe('POST /api/contacts', () => {
   });
 
   it('should accept favorite field when provided', async () => {
-    const contactData = createTestContact({ favorite: true });
+    const contactData = createTestContact({ favorite: true }, testUser.id);
 
     const response = await request(app)
       .post('/api/contacts')
@@ -61,9 +67,14 @@ describe('POST /api/contacts', () => {
 
   describe('Validation errors', () => {
     it('should return 400 for missing email field', async () => {
+      const invalidData = {
+        ...TEST_CONTACTS.MISSING_EMAIL,
+        owner: testUser.id
+      };
+
       const response = await request(app)
         .post('/api/contacts')
-        .send(TEST_CONTACTS.MISSING_EMAIL)
+        .send(invalidData)
         .expect('Content-Type', /json/)
         .expect(HTTP_STATUS.BAD_REQUEST);
 
@@ -72,9 +83,14 @@ describe('POST /api/contacts', () => {
     });
 
     it('should return 400 for missing phone field', async () => {
+      const invalidData = {
+        ...TEST_CONTACTS.MISSING_PHONE,
+        owner: testUser.id
+      };
+
       const response = await request(app)
         .post('/api/contacts')
-        .send(TEST_CONTACTS.MISSING_PHONE)
+        .send(invalidData)
         .expect('Content-Type', /json/)
         .expect(HTTP_STATUS.BAD_REQUEST);
 
@@ -83,9 +99,14 @@ describe('POST /api/contacts', () => {
     });
 
     it('should return 400 for missing name field', async () => {
+      const invalidData = {
+        ...TEST_CONTACTS.MISSING_NAME,
+        owner: testUser.id
+      };
+
       const response = await request(app)
         .post('/api/contacts')
-        .send(TEST_CONTACTS.MISSING_NAME)
+        .send(invalidData)
         .expect('Content-Type', /json/)
         .expect(HTTP_STATUS.BAD_REQUEST);
 
@@ -94,9 +115,14 @@ describe('POST /api/contacts', () => {
     });
 
     it('should return 400 for invalid email format', async () => {
+      const invalidData = {
+        ...TEST_CONTACTS.INVALID_EMAIL,
+        owner: testUser.id
+      };
+
       const response = await request(app)
         .post('/api/contacts')
-        .send(TEST_CONTACTS.INVALID_EMAIL)
+        .send(invalidData)
         .expect('Content-Type', /json/)
         .expect(HTTP_STATUS.BAD_REQUEST);
 
@@ -105,9 +131,14 @@ describe('POST /api/contacts', () => {
     });
 
     it('should return 400 for invalid phone format (no +)', async () => {
+      const invalidData = {
+        ...TEST_CONTACTS.INVALID_PHONE_NO_PLUS,
+        owner: testUser.id
+      };
+
       const response = await request(app)
         .post('/api/contacts')
-        .send(TEST_CONTACTS.INVALID_PHONE_NO_PLUS)
+        .send(invalidData)
         .expect('Content-Type', /json/)
         .expect(HTTP_STATUS.BAD_REQUEST);
 
@@ -115,9 +146,14 @@ describe('POST /api/contacts', () => {
     });
 
     it('should return 400 for phone number too short', async () => {
+      const invalidData = {
+        ...TEST_CONTACTS.INVALID_PHONE_TOO_SHORT,
+        owner: testUser.id
+      };
+
       const response = await request(app)
         .post('/api/contacts')
-        .send(TEST_CONTACTS.INVALID_PHONE_TOO_SHORT)
+        .send(invalidData)
         .expect('Content-Type', /json/)
         .expect(HTTP_STATUS.BAD_REQUEST);
 
@@ -137,8 +173,8 @@ describe('POST /api/contacts', () => {
 
   describe('Database constraints', () => {
     it('should handle duplicate email gracefully', async () => {
-      const contactData = createTestContact();
-      
+      const contactData = createTestContact({}, testUser.id);
+
       // Створюємо перший контакт
       await request(app)
         .post('/api/contacts')
@@ -154,4 +190,4 @@ describe('POST /api/contacts', () => {
       expect(response.body).toHaveProperty('message');
     });
   });
-}); 
+});

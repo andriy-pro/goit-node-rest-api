@@ -7,19 +7,28 @@ import {
   updateContact,
   updateStatusContact,
 } from '../../src/services/contactsServices.js';
-import { Contact } from '../../src/models/index.js';
+import { Contact, User } from '../../src/models/index.js';
 import sequelize from '../../src/db/connection.js';
+import { createTestUser } from '../helpers/testConstants.js';
 
 describe('Contacts Services (Sequelize)', () => {
-  const testContact = {
-    name: 'Test Contact',
-    email: 'test.contact@example.com',
-    phone: '+380991234567',
-  };
+  let testUser;
+  let testContact;
 
   beforeEach(async () => {
-    // Clean up the table before each test
+    // Clean up the tables before each test
     await Contact.destroy({ where: {}, truncate: true });
+    await User.destroy({ where: {}, truncate: true });
+    
+    // Create test user for each test
+    testUser = await createTestUser();
+    
+    testContact = {
+      name: 'Test Contact',
+      email: 'test.contact@example.com',
+      phone: '+380991234567',
+      owner: testUser.id,
+    };
   });
 
   afterAll(async () => {
@@ -34,6 +43,7 @@ describe('Contacts Services (Sequelize)', () => {
     expect(newContact.email).toBe(testContact.email);
     expect(newContact.phone).toBe(testContact.phone);
     expect(newContact.favorite).toBe(false);
+    expect(newContact.owner).toBe(testUser.id);
   });
 
   it('should not allow duplicate email', async () => {

@@ -75,6 +75,18 @@ const Contact = sequelize.define(
           msg: 'The favorite field must be a boolean value'
         }
       }
+    },
+    owner: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: 'Owner field is required'
+        },
+        isInt: {
+          msg: 'Owner must be an integer'
+        }
+      }
     }
   },
   {
@@ -91,9 +103,19 @@ const Contact = sequelize.define(
       },
       {
         fields: ['favorite']
+      },
+      {
+        fields: ['owner']
       }
     ]
   }
 );
+
+// Хук для захисту owner поля від зміни
+Contact.beforeUpdate(async (contact) => {
+  if (contact.changed('owner')) {
+    throw new Error('Owner field cannot be modified');
+  }
+});
 
 export default Contact;

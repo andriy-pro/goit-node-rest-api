@@ -7,7 +7,7 @@ describe('Integration: Error Handling', () => {
     const response = await request(app).get(`/api/contacts/${INVALID_ID_FORMAT}`);
     expect(response.status).toBe(400);
   });
-  
+
   it('should return 404 for not found contact on GET', async () => {
     const response = await request(app).get(`/api/contacts/${NON_EXISTENT_ID}`);
     expect(response.status).toBe(404);
@@ -16,14 +16,14 @@ describe('Integration: Error Handling', () => {
   it('should return 400 for invalid contact id format on PUT', async () => {
     const response = await request(app)
       .put(`/api/contacts/${INVALID_ID_FORMAT}`)
-      .send({ name: 'test', email: 'test@test.com', phone: '+380991234567' });
+      .send({ name: 'test', email: 'test@test.com', phone: '+380991234567', owner: 1 });
     expect(response.status).toBe(400);
   });
 
   it('should return 404 for not found contact on PUT', async () => {
     const response = await request(app)
       .put(`/api/contacts/${NON_EXISTENT_ID}`)
-      .send({ name: 'test', email: 'test@test.com', phone: '+380991234567' });
+      .send({ name: 'test', email: 'test@test.com', phone: '+380991234567', owner: 1 });
     expect(response.status).toBe(404);
   });
 

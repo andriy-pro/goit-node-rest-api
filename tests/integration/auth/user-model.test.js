@@ -11,7 +11,7 @@
 
 import { User } from '../../../src/models/index.js';
 import sequelize from '../../../src/db/connection.js';
-import { HTTP_STATUS } from '../../helpers/testConstants.js';
+
 
 describe('User Model', () => {
   beforeAll(async () => {
