@@ -61,25 +61,25 @@ const baseContactFields = {
 /**
  * Схема валідації для створення нового контакту (POST /api/contacts)
  * Всі базові поля обов'язкові, favorite опціонально (за замовчуванням false)
+ * Поле owner встановлюється автоматично з req.user.id
  */
 export const contactCreateSchema = Joi.object({
   name: baseContactFields.name.required(),
   email: baseContactFields.email.required(),
   phone: baseContactFields.phone.required(),
-  favorite: baseContactFields.favorite.optional(),
-  owner: baseContactFields.owner.required()
+  favorite: baseContactFields.favorite.optional()
 });
 
 /**
  * Схема валідації для повного оновлення контакту (PUT /api/contacts/:id)
  * Всі основні поля обов'язкові для PUT запитів
+ * Поле owner встановлюється автоматично з req.user.id
  */
 export const contactUpdateSchema = Joi.object({
   name: baseContactFields.name.required(),
   email: baseContactFields.email.required(),
   phone: baseContactFields.phone.required(),
-  favorite: baseContactFields.favorite.optional(),
-  owner: baseContactFields.owner.required()
+  favorite: baseContactFields.favorite.optional()
 });
 
 /**

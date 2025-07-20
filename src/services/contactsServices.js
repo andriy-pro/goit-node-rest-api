@@ -13,64 +13,72 @@ import { Contact } from '../models/index.js';
 
 
 /**
- * Читає всі контакти з бази даних PostgreSQL
- * Використовує Sequelize для отримання даних
+ * Читає всі контакти з бази даних PostgreSQL для конкретного користувача
+ * Використовує Sequelize для отримання даних з фільтрацією по owner
  *
  * @async
  * @function listContacts
+ * @param {number} ownerId - ID користувача-власника контактів
  * @returns {Promise<Array<Object>>} Масив об'єктів контактів
  * @throws {Error} - Помилки роботи з базою даних
  *
  * @example
- * const contacts = await listContacts();
+ * const contacts = await listContacts(userId);
  * console.log(contacts); // [{id: 1, name: 'John', email: 'john@example.com', phone: '+123456789', favorite: false}]
  */
-export const listContacts = async () => {
+export const listContacts = async (ownerId) => {
   const contacts = await Contact.findAll({
+    where: { owner: ownerId },
     order: [['createdAt', 'DESC']],
   });
   return contacts;
 };
 
 /**
- * Отримує контакт за унікальним ідентифікатором
- * Використовує Sequelize для пошуку в базі даних
+ * Отримує контакт за унікальним ідентифікатором та власником
+ * Використовує Sequelize для пошуку в базі даних з перевіркою власника
  *
  * @async
  * @function getContactById
  * @param {string|number} contactId - Унікальний ідентифікатор контакту
+ * @param {number} ownerId - ID користувача-власника контакту
  * @returns {Promise<Object|null>} Об'єкт контакту або null, якщо не знайдено
  * @throws {Error} - Помилки роботи з базою даних
  *
  * @example
- * const contact = await getContactById(123);
+ * const contact = await getContactById(123, userId);
  * if (contact) {
  *   console.log(contact.name); // 'John Doe'
  * }
  */
-export const getContactById = async (contactId) => {
-  const contact = await Contact.findByPk(contactId);
+export const getContactById = async (contactId, ownerId) => {
+  const contact = await Contact.findOne({
+    where: { id: contactId, owner: ownerId }
+  });
   return contact;
 };
 
 /**
- * Видаляє контакт з бази даних за ідентифікатором
- * Використовує Sequelize для атомарного видалення
+ * Видаляє контакт з бази даних за ідентифікатором та власником
+ * Використовує Sequelize для атомарного видалення з перевіркою власника
  *
  * @async
  * @function removeContact
  * @param {string|number} contactId - Унікальний ідентифікатор контакту для видалення
+ * @param {number} ownerId - ID користувача-власника контакту
  * @returns {Promise<Object|null>} Видалений об'єкт контакту або null, якщо не знайдено
  * @throws {Error} - Помилки роботи з базою даних
  *
  * @example
- * const deletedContact = await removeContact(123);
+ * const deletedContact = await removeContact(123, userId);
  * if (deletedContact) {
  *   console.log(`Видалено: ${deletedContact.name}`);
  * }
  */
-export const removeContact = async (contactId) => {
-  const contact = await Contact.findByPk(contactId);
+export const removeContact = async (contactId, ownerId) => {
+  const contact = await Contact.findOne({
+    where: { id: contactId, owner: ownerId }
+  });
   if (contact) {
     await contact.destroy();
   }
@@ -100,8 +108,11 @@ export const removeContact = async (contactId) => {
  * });
  * console.log(newContact.id); // автоінкремент ID з PostgreSQL
  */
-export const addContact = async (body) => {
-  const newContact = await Contact.create(body);
+export const addContact = async (body, ownerId) => {
+  const newContact = await Contact.create({
+    ...body,
+    owner: ownerId
+  });
   return newContact;
 };
 
@@ -127,8 +138,10 @@ export const addContact = async (body) => {
  *   console.log(updatedContact.email); // залишається попередній email
  * }
  */
-export const updateContact = async (contactId, body) => {
-  const contact = await Contact.findByPk(contactId);
+export const updateContact = async (contactId, body, ownerId) => {
+  const contact = await Contact.findOne({
+    where: { id: contactId, owner: ownerId }
+  });
   if (contact) {
     const updatedContact = await contact.update(body);
     return updatedContact;
@@ -154,8 +167,10 @@ export const updateContact = async (contactId, body) => {
  *   console.log(updatedContact.favorite); // true
  * }
  */
-export const updateStatusContact = async (contactId, body) => {
-  const contact = await Contact.findByPk(contactId);
+export const updateStatusContact = async (contactId, body, ownerId) => {
+  const contact = await Contact.findOne({
+    where: { id: contactId, owner: ownerId }
+  });
   if (contact) {
     const updatedContact = await contact.update({
       favorite: body.favorite,

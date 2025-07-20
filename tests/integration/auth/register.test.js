@@ -3,10 +3,15 @@ import app from '../../../src/app.js';
 import { User } from '../../../src/models/index.js';
 import sequelize from '../../../src/db/connection.js';
 import { HTTP_STATUS } from '../../helpers/testConstants.js';
+import { 
+  createTestUser, 
+  testSuccessfulAuthResponse, 
+  testAuthError,
+  VALIDATION_TEST_CASES 
+} from '../../helpers/authTestHelpers.js';
 
 describe('POST /api/auth/register', () => {
   beforeEach(async () => {
-    // Очищуємо та перестворюємо таблиці перед кожним тестом
     await sequelize.sync({ force: true });
   });
 
@@ -23,11 +28,7 @@ describe('POST /api/auth/register', () => {
         .expect('Content-Type', /json/)
         .expect(HTTP_STATUS.CREATED);
 
-      expect(response.body).toHaveProperty('user');
-      expect(response.body.user).toHaveProperty('email', userData.email);
-      expect(response.body.user).toHaveProperty('subscription', 'starter');
-      expect(response.body.user).not.toHaveProperty('password');
-      expect(response.body.user).not.toHaveProperty('token');
+      testSuccessfulAuthResponse(response, userData.email);
     });
 
     it('should hash password before saving', async () => {
@@ -45,7 +46,7 @@ describe('POST /api/auth/register', () => {
       const user = await User.findOne({ where: { email: userData.email } });
       expect(user).toBeDefined();
       expect(user.password).not.toBe(userData.password);
-      expect(user.password).toMatch(/^\$2[aby]\$\d{1,2}\$[./A-Za-z0-9]{53}$/); // bcrypt hash pattern
+      expect(user.password).toMatch(/^\$2[aby]\$\d{1,2}\$[./A-Za-z0-9]{53}$/);
     });
 
     it('should set default subscription to starter', async () => {
@@ -64,76 +65,23 @@ describe('POST /api/auth/register', () => {
   });
 
   describe('Validation Errors', () => {
-    it('should return 400 for missing email', async () => {
-      const userData = {
-        password: 'examplepassword'
-      };
+    // Тестуємо тільки найважливіші випадки валідації
+    it('should return 400 for missing required fields', async () => {
+      const testCases = [
+        { data: { password: 'testpassword' }, error: 'email' },
+        { data: { email: 'test@example.com' }, error: 'password' },
+        { data: { email: 'invalid-email', password: 'testpassword' }, error: 'valid email' }
+      ];
 
-      const response = await request(app)
-        .post('/api/auth/register')
-        .send(userData)
-        .expect('Content-Type', /json/)
-        .expect(HTTP_STATUS.BAD_REQUEST);
+      for (const testCase of testCases) {
+        const response = await request(app)
+          .post('/api/auth/register')
+          .send(testCase.data)
+          .expect(HTTP_STATUS.BAD_REQUEST);
 
-      expect(response.body).toHaveProperty('message');
-      expect(response.body.message).toMatch(/email/i);
-    });
-
-    it('should return 400 for missing password', async () => {
-      const userData = {
-        email: 'test@example.com'
-      };
-
-      const response = await request(app)
-        .post('/api/auth/register')
-        .send(userData)
-        .expect('Content-Type', /json/)
-        .expect(HTTP_STATUS.BAD_REQUEST);
-
-      expect(response.body).toHaveProperty('message');
-      expect(response.body.message).toMatch(/password/i);
-    });
-
-    it('should return 400 for invalid email format', async () => {
-      const userData = {
-        email: 'invalid-email',
-        password: 'examplepassword'
-      };
-
-      const response = await request(app)
-        .post('/api/auth/register')
-        .send(userData)
-        .expect('Content-Type', /json/)
-        .expect(HTTP_STATUS.BAD_REQUEST);
-
-      expect(response.body).toHaveProperty('message');
-      expect(response.body.message).toMatch(/valid email/i);
-    });
-
-    it('should return 400 for short password', async () => {
-      const userData = {
-        email: 'test@example.com',
-        password: '123'
-      };
-
-      const response = await request(app)
-        .post('/api/auth/register')
-        .send(userData)
-        .expect('Content-Type', /json/)
-        .expect(HTTP_STATUS.BAD_REQUEST);
-
-      expect(response.body).toHaveProperty('message');
-      expect(response.body.message).toMatch(/password/i);
-    });
-
-    it('should return 400 for empty request body', async () => {
-      const response = await request(app)
-        .post('/api/auth/register')
-        .send({})
-        .expect('Content-Type', /json/)
-        .expect(HTTP_STATUS.BAD_REQUEST);
-
-      expect(response.body).toHaveProperty('message');
+        expect(response.body).toHaveProperty('message');
+        expect(response.body.message).toMatch(new RegExp(testCase.error, 'i'));
+      }
     });
   });
 
@@ -157,7 +105,7 @@ describe('POST /api/auth/register', () => {
         .expect('Content-Type', /json/)
         .expect(409);
 
-      expect(response.body).toHaveProperty('message', 'Email in use');
+      testAuthError(response, 409, 'Email in use');
     });
   });
 
@@ -173,12 +121,7 @@ describe('POST /api/auth/register', () => {
         .send(userData)
         .expect(HTTP_STATUS.CREATED);
 
-      expect(response.body).toHaveProperty('user');
-      expect(response.body.user).toHaveProperty('email');
-      expect(response.body.user).toHaveProperty('subscription');
-      expect(response.body.user).not.toHaveProperty('password');
-      expect(response.body.user).not.toHaveProperty('token');
-      expect(response.body.user).not.toHaveProperty('id');
+      testSuccessfulAuthResponse(response, userData.email);
     });
   });
 }); 

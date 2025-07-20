@@ -20,6 +20,7 @@ import {
 } from "../controllers/contactsControllers.js";
 import validateId from "../middlewares/validateId.js";
 import validateBody from "../helpers/validateBody.js";
+import authenticateToken from "../middlewares/authenticateToken.js";
 import {
   contactCreateSchema,
   contactUpdateSchema,
@@ -27,6 +28,9 @@ import {
 } from "../schemas/contactsSchemas.js";
 
 const contactsRouter = express.Router();
+
+// Всі маршрути контактів захищені аутентифікацією
+contactsRouter.use(authenticateToken);
 
 // GET /api/contacts - отримати всі контакти
 contactsRouter.get("/", getAllContacts);

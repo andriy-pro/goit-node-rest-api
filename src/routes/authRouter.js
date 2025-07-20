@@ -11,6 +11,7 @@
 
 import express from 'express';
 import validateBody from '../helpers/validateBody.js';
+import authenticateToken from '../middlewares/authenticateToken.js';
 import { registerSchema, loginSchema, subscriptionSchema } from '../schemas/authSchemas.js';
 import {
   register,
@@ -44,7 +45,7 @@ router.post('/login', validateBody(loginSchema), login);
  * Headers: Authorization: Bearer <token>
  * Response: 204 No Content
  */
-router.post('/logout', logout);
+router.post('/logout', authenticateToken, logout);
 
 /**
  * GET /api/auth/current
@@ -52,7 +53,7 @@ router.post('/logout', logout);
  * Headers: Authorization: Bearer <token>
  * Response: { email, subscription }
  */
-router.get('/current', getCurrentUser);
+router.get('/current', authenticateToken, getCurrentUser);
 
 /**
  * PATCH /api/auth/subscription
@@ -61,6 +62,6 @@ router.get('/current', getCurrentUser);
  * Body: { subscription }
  * Response: { email, subscription }
  */
-router.patch('/subscription', validateBody(subscriptionSchema), updateSubscription);
+router.patch('/subscription', authenticateToken, validateBody(subscriptionSchema), updateSubscription);
 
 export default router; 

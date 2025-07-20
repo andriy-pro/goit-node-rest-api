@@ -19,18 +19,19 @@ import {
 import HttpError from "../helpers/HttpError.js";
 
 /**
- * Отримати список всіх контактів
+ * Отримати список всіх контактів користувача
  * GET /api/contacts
  *
  * @async
  * @function getAllContacts
  * @param {Object} req - Express request object
+ * @param {Object} req.user - Користувач з middleware аутентифікації
  * @param {Object} res - Express response object
  * @returns {Promise<void>} HTTP відповідь з списком контактів
  */
 export const getAllContacts = async (req, res, next) => {
   try {
-    const contacts = await listContacts();
+    const contacts = await listContacts(req.user.id);
     res.status(200).json(contacts);
   } catch (error) {
     next(error);
@@ -45,13 +46,14 @@ export const getAllContacts = async (req, res, next) => {
  * @function getOneContact
  * @param {Object} req - Express request object
  * @param {string} req.params.id - ID контакту
+ * @param {Object} req.user - Користувач з middleware аутентифікації
  * @param {Object} res - Express response object
  * @returns {Promise<void>} HTTP відповідь з контактом або 404
  */
 export const getOneContact = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const contact = await getContactById(id);
+    const contact = await getContactById(id, req.user.id);
     if (!contact) {
       throw HttpError(404, "Not found");
     }
@@ -69,13 +71,14 @@ export const getOneContact = async (req, res, next) => {
  * @function deleteContact
  * @param {Object} req - Express request object
  * @param {string} req.params.id - ID контакту для видалення
+ * @param {Object} req.user - Користувач з middleware аутентифікації
  * @param {Object} res - Express response object
  * @returns {Promise<void>} HTTP відповідь з видаленим контактом або 404
  */
 export const deleteContact = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const deletedContact = await removeContact(id);
+    const deletedContact = await removeContact(id, req.user.id);
     if (!deletedContact) {
       throw HttpError(404, "Not found");
     }
@@ -98,7 +101,7 @@ export const deleteContact = async (req, res, next) => {
  */
 export const createContact = async (req, res, next) => {
   try {
-    const newContact = await addContact(req.body);
+    const newContact = await addContact(req.body, req.user.id);
     if (!newContact) {
       throw HttpError(400, "Validation error");
     }
@@ -123,7 +126,7 @@ export const createContact = async (req, res, next) => {
 export const updateContact = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const updatedContact = await updateContactService(id, req.body);
+    const updatedContact = await updateContactService(id, req.body, req.user.id);
     if (!updatedContact) {
       throw HttpError(404, "Not found");
     }
@@ -148,7 +151,7 @@ export const updateContact = async (req, res, next) => {
 export const updateContactStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const updatedContact = await updateStatusContactService(id, req.body);
+    const updatedContact = await updateStatusContactService(id, req.body, req.user.id);
     if (!updatedContact) {
       throw HttpError(404, "Not found");
     }
