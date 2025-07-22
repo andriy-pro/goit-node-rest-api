@@ -36,7 +36,7 @@ app.use("/api/contacts", contactsRouter);
 // 🚨 Глобальний обробник помилок (повертає JSON замість HTML)
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
-  const { status = 500, message = "Внутрішня помилка сервера" } = err;
+  const { status = 500, message = "Internal server error" } = err;
   res.status(status).json({
     message
   });
@@ -45,7 +45,7 @@ app.use((err, req, res, next) => {
 // ❌ Обробка 404 для невідомих роутів
 app.use((req, res) => {
   res.status(404).json({
-    message: `Роут ${req.originalUrl} не знайдено`
+    message: "Not found"
   });
 });
 

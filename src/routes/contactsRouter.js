@@ -10,31 +10,25 @@
  */
 
 import express from "express";
-import {
-  getAllContacts,
-  getOneContact,
-  deleteContact,
-  createContact,
-  updateContact,
-} from "../controllers/contactsControllers.js";
+import contactsControllers from "../controllers/contactsControllers.js";
 import validateBody from "../helpers/validateBody.js";
 import { contactCreateSchema, contactUpdateSchema } from "../schemas/contactsSchemas.js";
 
 const contactsRouter = express.Router();
 
 // GET /api/contacts - отримати всі контакти
-contactsRouter.get("/", getAllContacts);
+contactsRouter.get("/", contactsControllers.getAllContacts);
 
 // GET /api/contacts/:id - отримати контакт за ID
-contactsRouter.get("/:id", getOneContact);
+contactsRouter.get("/:id", contactsControllers.getOneContact);
 
 // DELETE /api/contacts/:id - видалити контакт за ID
-contactsRouter.delete("/:id", deleteContact);
+contactsRouter.delete("/:id", contactsControllers.deleteContact);
 
 // POST /api/contacts - створити новий контакт (з валідацією)
-contactsRouter.post("/", validateBody(contactCreateSchema), createContact);
+contactsRouter.post("/", validateBody(contactCreateSchema), contactsControllers.createContact);
 
 // PUT /api/contacts/:id - оновити контакт за ID (з валідацією)
-contactsRouter.put("/:id", validateBody(contactUpdateSchema), updateContact);
+contactsRouter.put("/:id", validateBody(contactUpdateSchema), contactsControllers.updateContact);
 
 export default contactsRouter;

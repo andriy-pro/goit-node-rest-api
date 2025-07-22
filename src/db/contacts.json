@@ -1,23 +1,5 @@
 [
   {
-    "id": "qdggE76Jtbfd9eWJHrssH",
-    "name": "Chaim Lewis",
-    "email": "dui.in@egetlacus.ca",
-    "phone": "+12948406685"
-  },
-  {
-    "id": "drsAJ4SHPYqZeG-83QTVW",
-    "name": "Kennedy Lane",
-    "email": "mattis.Cras@nonenimMauris.net",
-    "phone": "+15424517038"
-  },
-  {
-    "id": "vza2RIzNGIwutCVCs4mCL",
-    "name": "Wylie Pope",
-    "email": "est@utquamvel.net",
-    "phone": "+16928022949"
-  },
-  {
     "id": "05olLMgyVQdWRwgKfg5J6",
     "name": "Cyrus Jackson",
     "email": "nibh@semsempererat.com",
@@ -60,12 +42,6 @@
     "phone": "+1234567890"
   },
   {
-    "id": "oxW5sI3WfXEclwsxyixcb",
-    "name": "Invalid Phone User",
-    "email": "invalid@test.com",
-    "phone": "(123) 456-7890"
-  },
-  {
     "id": "GJeBhKtzYKUH4DOlChCmK",
     "name": "Тестовий Контакт",
     "email": "test@example.com",
@@ -85,6 +61,78 @@
   },
   {
     "id": "mgRk5qtoCCGoFVGm1ATio",
+    "name": "Тестовий Контакт",
+    "email": "test@example.com",
+    "phone": "+380501234567"
+  },
+  {
+    "id": "_xOIdTk9_YV0HDHfkykBt",
+    "name": "Тестовий Контакт",
+    "email": "test@example.com",
+    "phone": "+380501234567"
+  },
+  {
+    "id": "oVXGVS8RTm_wrOn0kV8iB",
+    "name": "Тестовий Контакт",
+    "email": "test@example.com",
+    "phone": "+380501234567"
+  },
+  {
+    "id": "ludtrfAVTKpllvnI3YWmd",
+    "name": "Тестовий Контакт",
+    "email": "test@example.com",
+    "phone": "+380501234567"
+  },
+  {
+    "id": "XKH96ODlLEwyXEzOQjmUT",
+    "name": "Тестовий Контакт",
+    "email": "test@example.com",
+    "phone": "+380501234567"
+  },
+  {
+    "id": "z0ix7ZovgZ3PXNHfiueDO",
+    "name": "Тестовий Контакт",
+    "email": "test@example.com",
+    "phone": "+380501234567"
+  },
+  {
+    "id": "MRFik2wBVPN7TCAuwbwom",
+    "name": "Тестовий Контакт",
+    "email": "test@example.com",
+    "phone": "+380501234567"
+  },
+  {
+    "id": "zX6OdoIEi_9JwGbxMIMVu",
+    "name": "Тестовий Контакт",
+    "email": "test@example.com",
+    "phone": "+380501234567"
+  },
+  {
+    "id": "fquZsdXcJ0Fy0VvVgZkqg",
+    "name": "Тестовий Контакт",
+    "email": "test@example.com",
+    "phone": "+380501234567"
+  },
+  {
+    "id": "KyYIerXKLOKfKFeK5aSB6",
+    "name": "Тестовий Контакт",
+    "email": "test@example.com",
+    "phone": "+380501234567"
+  },
+  {
+    "id": "cDkWpYSLHZDuSMmkJtGL6",
+    "name": "Тестовий Контакт",
+    "email": "test@example.com",
+    "phone": "+380501234567"
+  },
+  {
+    "id": "Tf7C_wRxG5XPRvp7zho2-",
+    "name": "Тестовий Контакт",
+    "email": "test@example.com",
+    "phone": "+380501234567"
+  },
+  {
+    "id": "fRjxl9LXAMaWXBYvUA2To",
     "name": "Тестовий Контакт",
     "email": "test@example.com",
     "phone": "+380501234567"

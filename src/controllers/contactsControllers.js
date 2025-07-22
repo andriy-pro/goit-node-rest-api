@@ -15,6 +15,8 @@ import {
   addContact,
   updateContact as updateContactService
 } from "../services/contactsServices.js";
+import HttpError from "../helpers/HttpError.js";
+import { ctrlWrapper } from "../helpers/ctrlWrapper.js";
 
 /**
  * Отримати список всіх контактів
@@ -26,16 +28,9 @@ import {
  * @param {Object} res - Express response object
  * @returns {Promise<void>} HTTP відповідь з списком контактів
  */
-export const getAllContacts = async (req, res) => {
-  try {
-    const contacts = await listContacts();
-    res.status(200).json(contacts);
-  } catch (error) {
-    res.status(500).json({
-      message: "Помилка сервера при отриманні контактів",
-      error: error.message
-    });
-  }
+const getAllContacts = async (req, res) => {
+  const contacts = await listContacts();
+  res.status(200).json(contacts);
 };
 
 /**
@@ -49,24 +44,13 @@ export const getAllContacts = async (req, res) => {
  * @param {Object} res - Express response object
  * @returns {Promise<void>} HTTP відповідь з контактом або 404
  */
-export const getOneContact = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const contact = await getContactById(id);
-
-    if (!contact) {
-      return res.status(404).json({
-        message: `Контакт з ID ${id} не знайдено`
-      });
-    }
-
-    res.status(200).json(contact);
-  } catch (error) {
-    res.status(500).json({
-      message: "Помилка сервера при отриманні контакту",
-      error: error.message
-    });
+const getOneContact = async (req, res) => {
+  const { id } = req.params;
+  const contact = await getContactById(id);
+  if (!contact) {
+    throw HttpError(404, "Not found");
   }
+  res.status(200).json(contact);
 };
 
 /**
@@ -80,24 +64,13 @@ export const getOneContact = async (req, res) => {
  * @param {Object} res - Express response object
  * @returns {Promise<void>} HTTP відповідь з видаленим контактом або 404
  */
-export const deleteContact = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const deletedContact = await removeContact(id);
-
-    if (!deletedContact) {
-      return res.status(404).json({
-        message: `Контакт з ID ${id} не знайдено`
-      });
-    }
-
-    res.status(200).json(deletedContact);
-  } catch (error) {
-    res.status(500).json({
-      message: "Помилка сервера при видаленні контакту",
-      error: error.message
-    });
+const deleteContact = async (req, res) => {
+  const { id } = req.params;
+  const deletedContact = await removeContact(id);
+  if (!deletedContact) {
+    throw HttpError(404, "Not found");
   }
+  res.status(200).json(deletedContact);
 };
 
 /**
@@ -111,16 +84,9 @@ export const deleteContact = async (req, res) => {
  * @param {Object} res - Express response object
  * @returns {Promise<void>} HTTP відповідь з створеним контактом
  */
-export const createContact = async (req, res) => {
-  try {
-    const newContact = await addContact(req.body);
-    res.status(201).json(newContact);
-  } catch (error) {
-    res.status(500).json({
-      message: "Помилка сервера при створенні контакту",
-      error: error.message
-    });
-  }
+const createContact = async (req, res) => {
+  const newContact = await addContact(req.body);
+  res.status(201).json(newContact);
 };
 
 /**
@@ -135,22 +101,22 @@ export const createContact = async (req, res) => {
  * @param {Object} res - Express response object
  * @returns {Promise<void>} HTTP відповідь з оновленим контактом або 404
  */
-export const updateContact = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updatedContact = await updateContactService(id, req.body);
-
-    if (!updatedContact) {
-      return res.status(404).json({
-        message: `Контакт з ID ${id} не знайдено`
-      });
-    }
-
-    res.status(200).json(updatedContact);
-  } catch (error) {
-    res.status(500).json({
-      message: "Помилка сервера при оновленні контакту",
-      error: error.message
-    });
+const updateContact = async (req, res) => {
+  const { id } = req.params;
+  if (!req.body || Object.keys(req.body).length === 0) {
+    throw HttpError(400, "Body must have at least one field");
   }
+  const updatedContact = await updateContactService(id, req.body);
+  if (!updatedContact) {
+    throw HttpError(404, "Not found");
+  }
+  res.status(200).json(updatedContact);
+};
+
+export default {
+  getAllContacts: ctrlWrapper(getAllContacts),
+  getOneContact: ctrlWrapper(getOneContact),
+  deleteContact: ctrlWrapper(deleteContact),
+  createContact: ctrlWrapper(createContact),
+  updateContact: ctrlWrapper(updateContact),
 };

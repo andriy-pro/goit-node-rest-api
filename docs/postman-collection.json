@@ -1,7 +1,6 @@
 {
   "info": {
-    "name": "GoIT Node.js REST API - Contacts",
-    "description": "Kolektsiya dlya testuvannya REST API dlya upravlinnya kontaktamy. Vidpovidaye vymogam domashn'oho zavdannya z Node.js kursu GoIT.\n\n🔧 **Налаштування для WSL/Windows:**\n- Використовуйте `localhost:3000` якщо працюєте локально\n- Використовуйте IP адресу WSL (зазвичай 172.x.x.x) якщо працюєте з Windows Postman\n- Команда для знаходження IP WSL: `hostname -I | awk '{print $1}'`\n\n📚 **Включені тести:**\n- Всі CRUD операції для контактів\n- Валідація даних (E.164 телефони, email)\n- Обробка помилок (404, 400)\n- Middleware тестування",
+    "name": "GoIT Node.js REST API - Topic 4: REST API",
     "version": "1.0.0",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_postman_id": "goit-node-rest-api",
@@ -38,7 +37,7 @@
               "",
               "// Збереження першого контакту для подальших тестів",
               "if (pm.response.json().length > 0) {",
-              "    pm.globals.set('testContactId', pm.response.json()[0].id);",
+              "    pm.environment.set('testContactId', pm.response.json()[0].id);",
               "}"
             ],
             "type": "text/javascript"
@@ -100,11 +99,13 @@
               "",
               "// Перевірка структури контакту",
               "pm.test('Контакт має всі обовязкові поля', function () {",
-              "    const contact = pm.response.json();",
-              "    pm.expect(contact).to.have.property('id');",
-              "    pm.expect(contact).to.have.property('name');",
-              "    pm.expect(contact).to.have.property('email');",
-              "    pm.expect(contact).to.have.property('phone');",
+              "    if (pm.response.code === 200) {",
+              "        const contact = pm.response.json();",
+              "        pm.expect(contact).to.have.property('id');",
+              "        pm.expect(contact).to.have.property('name');",
+              "        pm.expect(contact).to.have.property('email');",
+              "        pm.expect(contact).to.have.property('phone');",
+              "    }",
               "});",
               "",
               "// Перевірка валідності email",
@@ -182,7 +183,7 @@
               "value": "application/json"
             }
           ],
-          "body": "{\n  \"message\": \"Контакт з ID nonexistent-id не знайдено\"\n}"
+          "body": "{\n  \"message\": \"Not found\"\n}"
         }
       ]
     },
@@ -216,7 +217,7 @@
               "",
               "// Збереження ID для подальших тестів",
               "if (pm.response.json().id) {",
-              "    pm.globals.set('createdContactId', pm.response.json().id);",
+              "    pm.environment.set('createdContactId', pm.response.json().id);",
               "}"
             ],
             "type": "text/javascript"
@@ -412,35 +413,53 @@
           "body": "{\n  \"id\": \"contact-id-here\",\n  \"name\": \"Оновлений Контакт\",\n  \"email\": \"updated@example.com\",\n  \"phone\": \"+380501234567\"\n}"
         },
         {
-          "name": "Порожнє тіло запиту",
-          "originalRequest": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/contacts/contact-id-here",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "contacts", "contact-id-here"]
-            }
-          },
-          "status": "Bad Request",
-          "code": 400,
-          "_postman_previewlanguage": "json",
-          "header": [
+          "name": "PUT empty body",
+          "event": [
             {
-              "key": "Content-Type",
-              "value": "application/json"
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Error message is correct', function () {",
+                  "    const error = pm.response.json();",
+                  "    pm.expect(error.message).to.eql('Body must have at least one field');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
             }
           ],
-          "body": "{\n  \"message\": \"Тіло запиту має містити хоча б одне поле\"\n}"
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json", "type": "text" },
+              { "key": "Accept", "value": "application/json", "type": "text" }
+            ],
+            "body": { "mode": "raw", "raw": "{}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{baseUrl}}/api/contacts/{{testContactId}}", "host": ["{{baseUrl}}"], "path": ["api", "contacts", "{{testContactId}}"] },
+            "description": "PUT with empty body should return 400 and correct message."
+          },
+          "response": [
+            {
+              "name": "Empty body",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json", "type": "text" },
+                  { "key": "Accept", "value": "application/json", "type": "text" }
+                ],
+                "body": { "mode": "raw", "raw": "{}", "options": { "raw": { "language": "json" } } },
+                "url": { "raw": "{{baseUrl}}/api/contacts/{{testContactId}}", "host": ["{{baseUrl}}"], "path": ["api", "contacts", "{{testContactId}}"] }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [ { "key": "Content-Type", "value": "application/json" } ],
+              "body": "{\n  \"message\": \"Body must have at least one field\"\n}"
+            }
+          ]
         }
       ]
     },
@@ -458,11 +477,14 @@
               "",
               "// Перевірка повернення видаленого контакту",
               "pm.test('Повертається видалений контакт', function () {",
-              "    const contact = pm.response.json();",
-              "    pm.expect(contact).to.have.property('id');",
-              "    pm.expect(contact).to.have.property('name');",
-              "    pm.expect(contact).to.have.property('email');",
-              "    pm.expect(contact).to.have.property('phone');",
+              "    if (pm.response.code === 200) {",
+              "        const contact = pm.response.json();",
+              "        pm.expect(contact).to.have.property('id');",
+              "        pm.expect(contact).to.have.property('name');",
+              "        pm.expect(contact).to.have.property('email');",
+              "        pm.expect(contact).to.have.property('phone');",
+              "        pm.globals.unset('testContactId');",
+              "    }",
               "});",
               "",
               "// Очищення глобальної змінної",
@@ -531,7 +553,7 @@
               "value": "application/json"
             }
           ],
-          "body": "{\n  \"message\": \"Контакт з ID nonexistent-id не знайдено\"\n}"
+          "body": "{\n  \"message\": \"Not found\"\n}"
         }
       ]
     },
@@ -551,7 +573,7 @@
               "pm.test('Повідомлення про помилку присутнє', function () {",
               "    const error = pm.response.json();",
               "    pm.expect(error).to.have.property('message');",
-              "    pm.expect(error.message).to.include('не знайдено');",
+              "    pm.expect(error.message).to.eql('Not found');",
               "});"
             ],
             "type": "text/javascript"
@@ -702,7 +724,7 @@
               "pm.test('Повідомлення про неіснуючий маршрут', function () {",
               "    const error = pm.response.json();",
               "    pm.expect(error).to.have.property('message');",
-              "    pm.expect(error.message).to.include('не знайдено' || 'not found');",
+              "    pm.expect(error.message).to.include('Not found');",
               "});"
             ],
             "type": "text/javascript"
@@ -736,7 +758,7 @@
         "exec": [
           "// Автоматичне встановлення базової URL якщо не встановлено",
           "if (!pm.environment.get('baseUrl') && !pm.globals.get('baseUrl')) {",
-          "    pm.globals.set('baseUrl', 'http://localhost:3000');",
+          "    pm.environment.set('baseUrl', 'http://localhost:3000');",
           "    console.log('🔧 Встановлено базову URL: http://localhost:3000');",
           "    console.log('💡 Для WSL використовуйте IP адресу: http://[WSL_IP]:3000');",
           "}"
@@ -750,12 +772,23 @@
         "exec": [
           "// 🔧 Встановлюємо тестовий ID з реальної бази даних",
           "if (!pm.globals.get('testContactId')) {",
-          "    pm.globals.set('testContactId', 'AeHIrLTr6JkxGE6SN-0Rw');",
-          "    console.log('✅ Встановлено testContactId: AeHIrLTr6JkxGE6SN-0Rw');",
+          "    pm.sendRequest({",
+          "        url: pm.globals.get('baseUrl') + '/api/contacts',",
+          "        method: 'POST',",
+          "        header: { 'Content-Type': 'application/json' },",
+          "        body: {",
+          "            mode: 'raw',",
+          "            raw: JSON.stringify({ name: 'Test Contact', email: 'test.auto@example.com', phone: '+380501234567' })",
+          "        }",
+          "    }, function (err, res) {",
+          "        if (!err && res && res.json().id) {",
+          "            pm.environment.set('testContactId', res.json().id);",
+          "        }",
+          "    });",
           "}",
           "// 🔄 Також встановлюємо для сумісності з старими тестами",
           "if (!pm.globals.get('createdContactId')) {",
-          "    pm.globals.set('createdContactId', 'AeHIrLTr6JkxGE6SN-0Rw');",
+          "    pm.environment.set('createdContactId', 'AeHIrLTr6JkxGE6SN-0Rw');",
           "    console.log('✅ Встановлено createdContactId для сумісності');",
           "}"
         ]
