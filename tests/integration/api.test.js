@@ -95,7 +95,7 @@ describe('🧪 Integration Tests: REST API Endpoints', () => {
         .expect(404);
 
       expect(response.body).toHaveProperty('message');
-      expect(response.body.message).toContain('не знайдено'); // Ukrainian: "not found"
+      expect(response.body.message).toContain('Not found'); // English: "not found"
     });
 
   });
@@ -221,7 +221,7 @@ describe('🧪 Integration Tests: REST API Endpoints', () => {
         .expect(404);
 
       expect(response.body).toHaveProperty('message');
-      expect(response.body.message).toContain('не знайдено'); // Ukrainian: "not found"
+      expect(response.body.message).toContain('Not found'); // English: "not found"
     });
 
     test('❌ має повертати 400 для порожнього body', async () => {
@@ -285,7 +285,7 @@ describe('🧪 Integration Tests: REST API Endpoints', () => {
         .expect(404);
 
       expect(response.body).toHaveProperty('message');
-      expect(response.body.message).toContain('не знайдено'); // Ukrainian: "not found"
+      expect(response.body.message).toContain('Not found'); // English: "not found"
     });
 
   });
