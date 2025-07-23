@@ -1,6 +1,6 @@
 import request from 'supertest';
 import express from 'express';
-import { jest } from '@jest/globals';
+
 import validateId from '../../src/middlewares/validateId.js';
 import errorHandler from '../../src/middlewares/errorHandler.js';
 import { INVALID_ID_FORMAT } from '../helpers/testConstants.js';

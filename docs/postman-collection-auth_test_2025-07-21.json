@@ -1,0 +1,1055 @@
+{
+  "info": {
+    "name": "GoIT Node.js REST API - Topic 7: Authentication & Authorization",
+    "description": "Фінальна колекція для тестування REST API з JWT аутентифікацією. Включає повну автоматизацію токенів, унікальні email адреси та оптимізовані тести.",
+    "version": "3.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "goit-node-rest-api-auth-final",
+    "_exporter_id": "goit-student"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testContactId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "createdContactId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "uniqueEmail",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Аутентифікація",
+      "item": [
+        {
+          "name": "📝 Реєстрація користувача",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Генеруємо унікальний email",
+                  "const timestamp = Date.now();",
+                  "const uniqueEmail = `demo${timestamp}@example.com`;",
+                  "pm.environment.set('uniqueEmail', uniqueEmail);",
+                  "",
+                  "// Оновлюємо body запиту",
+                  "const requestBody = {",
+                  "  email: uniqueEmail,",
+                  "  password: \"password123\"",
+                  "};",
+                  "pm.request.body.raw = JSON.stringify(requestBody, null, 2);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Перевірка статусу відповіді",
+                  "pm.test('Статус код має бути 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "// Перевірка типу контенту",
+                  "pm.test('Відповідь має бути у форматі JSON', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                  "});",
+                  "",
+                  "// Перевірка структури відповіді",
+                  "pm.test('Відповідь містить об\\'єкт user', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('user');",
+                  "    pm.expect(responseJson.user).to.have.property('email');",
+                  "    pm.expect(responseJson.user).to.have.property('subscription');",
+                  "});",
+                  "",
+                  "// Перевірка значень",
+                  "pm.test('Email відповідає відправленому', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    const uniqueEmail = pm.environment.get('uniqueEmail');",
+                  "    pm.expect(responseJson.user.email).to.equal(uniqueEmail);",
+                  "});",
+                  "",
+                  "pm.test('Subscription має бути starter', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson.user.subscription).to.equal('starter');",
+                  "});",
+                  "",
+                  "// Перевірка, що пароль не повертається",
+                  "pm.test('Пароль не повертається у відповіді', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson.user).to.not.have.property('password');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{uniqueEmail}}\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Реєстрація нового користувача з унікальним email.\n\n**Автоматизація:**\n- Генерує унікальний email на основі timestamp\n- Зберігає email в environment змінній\n- Перевіряє структуру відповіді"
+          },
+          "response": []
+        },
+        {
+          "name": "🔑 Вхід користувача",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Використовуємо збережений унікальний email",
+                  "const uniqueEmail = pm.environment.get('uniqueEmail');",
+                  "if (!uniqueEmail) {",
+                  "    pm.environment.set('error', 'uniqueEmail не знайдено. Спочатку виконайте реєстрацію.');",
+                  "    return;",
+                  "}",
+                  "",
+                  "// Оновлюємо body запиту",
+                  "const requestBody = {",
+                  "  email: uniqueEmail,",
+                  "  password: \"password123\"",
+                  "};",
+                  "pm.request.body.raw = JSON.stringify(requestBody, null, 2);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Перевірка статусу відповіді",
+                  "pm.test('Статус код має бути 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Перевірка структури відповіді",
+                  "pm.test('Відповідь містить token та user', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('token');",
+                  "    pm.expect(responseJson).to.have.property('user');",
+                  "});",
+                  "",
+                  "// Перевірка токена",
+                  "pm.test('Token має бути не пустим', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson.token).to.not.be.empty;",
+                  "});",
+                  "",
+                  "// Збереження токена для подальших запитів",
+                  "const responseJson = pm.response.json();",
+                  "if (responseJson.token) {",
+                  "    pm.environment.set('authToken', responseJson.token);",
+                  "    pm.environment.set('userId', responseJson.user.id || '');",
+                  "}",
+                  "",
+                  "// Перевірка даних користувача",
+                  "pm.test('Дані користувача коректні', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson.user).to.have.property('email');",
+                  "    pm.expect(responseJson.user).to.have.property('subscription');",
+                  "    pm.expect(responseJson.user).to.not.have.property('password');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{uniqueEmail}}\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Вхід користувача з унікальним email.\n\n**Автоматизація:**\n- Використовує збережений унікальний email\n- Зберігає JWT токен в environment змінній\n- Зберігає userId для подальших тестів"
+          },
+          "response": []
+        },
+        {
+          "name": "👤 Поточний користувач",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Перевіряємо наявність токена",
+                  "const authToken = pm.environment.get('authToken');",
+                  "if (!authToken) {",
+                  "    pm.environment.set('error', 'authToken не знайдено. Спочатку виконайте логін.');",
+                  "    return;",
+                  "}",
+                  "",
+                  "// Встановлюємо Authorization заголовок",
+                  "pm.request.headers.add({",
+                  "    key: 'Authorization',",
+                  "    value: 'Bearer ' + authToken",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Перевірка статусу відповіді",
+                  "pm.test('Статус код має бути 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Перевірка структури відповіді",
+                  "pm.test('Відповідь містить email та subscription', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('email');",
+                  "    pm.expect(responseJson).to.have.property('subscription');",
+                  "});",
+                  "",
+                  "// Перевірка даних користувача",
+                  "pm.test('Email відповідає зареєстрованому', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    const uniqueEmail = pm.environment.get('uniqueEmail');",
+                  "    pm.expect(responseJson.email).to.equal(uniqueEmail);",
+                  "});",
+                  "",
+                  "pm.test('Subscription має бути starter', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson.subscription).to.equal('starter');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/current",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "current"]
+            },
+            "description": "Отримання даних поточного користувача.\n\n**Автоматизація:**\n- Автоматично додає Authorization заголовок\n- Перевіряє відповідність email"
+          },
+          "response": []
+        },
+        {
+          "name": "🔄 Оновлення підписки",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Перевіряємо наявність токена",
+                  "const authToken = pm.environment.get('authToken');",
+                  "if (!authToken) {",
+                  "    pm.environment.set('error', 'authToken не знайдено. Спочатку виконайте логін.');",
+                  "    return;",
+                  "}",
+                  "",
+                  "// Встановлюємо Authorization заголовок",
+                  "pm.request.headers.add({",
+                  "    key: 'Authorization',",
+                  "    value: 'Bearer ' + authToken",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Перевірка статусу відповіді",
+                  "pm.test('Статус код має бути 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Перевірка структури відповіді",
+                  "pm.test('Відповідь містить email та subscription', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('email');",
+                  "    pm.expect(responseJson).to.have.property('subscription');",
+                  "});",
+                  "",
+                  "// Перевірка оновлення підписки",
+                  "pm.test('Subscription оновлено на pro', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson.subscription).to.equal('pro');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subscription\": \"pro\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/subscription",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "subscription"]
+            },
+            "description": "Оновлення підписки користувача.\n\n**Автоматизація:**\n- Автоматично додає Authorization заголовок\n- Перевіряє успішне оновлення підписки"
+          },
+          "response": []
+        },
+        {
+          "name": "🚪 Вихід користувача",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Перевіряємо наявність токена",
+                  "const authToken = pm.environment.get('authToken');",
+                  "if (!authToken) {",
+                  "    pm.environment.set('error', 'authToken не знайдено. Спочатку виконайте логін.');",
+                  "    return;",
+                  "}",
+                  "",
+                  "// Встановлюємо Authorization заголовок",
+                  "pm.request.headers.add({",
+                  "    key: 'Authorization',",
+                  "    value: 'Bearer ' + authToken",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Перевірка статусу відповіді",
+                  "pm.test('Статус код має бути 204 No Content', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "// Очищення токена після виходу",
+                  "pm.environment.unset('authToken');",
+                  "pm.environment.unset('userId');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout"]
+            },
+            "description": "Вихід користувача з системи.\n\n**Автоматизація:**\n- Автоматично додає Authorization заголовок\n- Очищає токен після успішного виходу"
+          },
+          "response": []
+        }
+      ],
+      "description": "Група запитів для аутентифікації користувачів з JWT токенами."
+    },
+    {
+      "name": "📋 Контакти (захищені)",
+      "item": [
+        {
+          "name": "🔑 Повторний вхід",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Використовуємо збережений унікальний email",
+                  "const uniqueEmail = pm.environment.get('uniqueEmail');",
+                  "if (!uniqueEmail) {",
+                  "    pm.environment.set('error', 'uniqueEmail не знайдено. Спочатку виконайте реєстрацію.');",
+                  "    return;",
+                  "}",
+                  "",
+                  "// Оновлюємо body запиту",
+                  "const requestBody = {",
+                  "  email: uniqueEmail,",
+                  "  password: \"password123\"",
+                  "};",
+                  "pm.request.body.raw = JSON.stringify(requestBody, null, 2);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Перевірка статусу відповіді",
+                  "pm.test('Статус код має бути 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Перевірка структури відповіді",
+                  "pm.test('Відповідь містить token та user', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('token');",
+                  "    pm.expect(responseJson).to.have.property('user');",
+                  "});",
+                  "",
+                  "// Перевірка токена",
+                  "pm.test('Token має бути не пустим', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson.token).to.not.be.empty;",
+                  "});",
+                  "",
+                  "// Збереження токена для подальших запитів",
+                  "const responseJson = pm.response.json();",
+                  "if (responseJson.token) {",
+                  "    pm.environment.set('authToken', responseJson.token);",
+                  "    pm.environment.set('userId', responseJson.user.id || '');",
+                  "}",
+                  "",
+                  "// Перевірка даних користувача",
+                  "pm.test('Дані користувача коректні', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson.user).to.have.property('email');",
+                  "    pm.expect(responseJson.user).to.have.property('subscription');",
+                  "    pm.expect(responseJson.user).to.not.have.property('password');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{uniqueEmail}}\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Повторний вхід користувача з унікальним email.\n\n**Автоматизація:**\n- Використовує збережений унікальний email\n- Зберігає JWT токен в environment змінній\n- Зберігає userId для подальших тестів"
+          },
+          "response": []
+        },
+        {
+          "name": "📄 Отримати всі контакти",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Перевіряємо наявність токена",
+                  "const authToken = pm.environment.get('authToken');",
+                  "if (!authToken) {",
+                  "    pm.environment.set('error', 'authToken не знайдено. Спочатку виконайте логін.');",
+                  "    return;",
+                  "}",
+                  "",
+                  "// Встановлюємо Authorization заголовок",
+                  "pm.request.headers.add({",
+                  "    key: 'Authorization',",
+                  "    value: 'Bearer ' + authToken",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Перевірка статусу відповіді",
+                  "pm.test('Статус код має бути 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Перевірка структури відповіді",
+                  "pm.test('Відповідь містить масив контактів', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('contacts');",
+                  "    pm.expect(responseJson.contacts).to.be.an('array');",
+                  "});",
+                  "",
+                  "// Перевірка пагінації",
+                  "pm.test('Відповідь містить метадані пагінації', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('total');",
+                  "    pm.expect(responseJson).to.have.property('page');",
+                  "    pm.expect(responseJson).to.have.property('limit');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/contacts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "contacts"]
+            },
+            "description": "Отримання всіх контактів користувача.\n\n**Автоматизація:**\n- Автоматично додає Authorization заголовок\n- Перевіряє структуру відповіді з пагінацією"
+          },
+          "response": []
+        },
+        {
+          "name": "➕ Створити контакт",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Перевіряємо наявність токена",
+                  "const authToken = pm.environment.get('authToken');",
+                  "if (!authToken) {",
+                  "    pm.environment.set('error', 'authToken не знайдено. Спочатку виконайте логін.');",
+                  "    return;",
+                  "}",
+                  "",
+                  "// Встановлюємо Authorization заголовок",
+                  "pm.request.headers.add({",
+                  "    key: 'Authorization',",
+                  "    value: 'Bearer ' + authToken",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Перевірка статусу відповіді",
+                  "pm.test('Статус код має бути 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "// Перевірка структури контакту",
+                  "pm.test('Контакт містить всі необхідні поля', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('id');",
+                  "    pm.expect(responseJson).to.have.property('name');",
+                  "    pm.expect(responseJson).to.have.property('email');",
+                  "    pm.expect(responseJson).to.have.property('phone');",
+                  "    pm.expect(responseJson).to.have.property('favorite');",
+                  "    pm.expect(responseJson).to.have.property('owner');",
+                  "});",
+                  "",
+                  "// Перевірка власника",
+                  "pm.test('Контакт створений для поточного користувача', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    const userId = pm.environment.get('userId');",
+                  "    if (userId) {",
+                  "        pm.expect(responseJson.owner).to.equal(parseInt(userId));",
+                  "    }",
+                  "});",
+                  "",
+                  "// Збереження ID створеного контакту",
+                  "const responseJson = pm.response.json();",
+                  "if (responseJson.id) {",
+                  "    pm.environment.set('createdContactId', responseJson.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Demo Contact\",\n  \"email\": \"demo.contact@example.com\",\n  \"phone\": \"+380993456789\",\n  \"favorite\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/contacts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "contacts"]
+            },
+            "description": "Створення нового контакту.\n\n**Автоматизація:**\n- Автоматично додає Authorization заголовок\n- Зберігає ID створеного контакту для подальших операцій"
+          },
+          "response": []
+        },
+        {
+          "name": "📄 Отримати контакт за ID",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Перевіряємо наявність токена",
+                  "const authToken = pm.environment.get('authToken');",
+                  "if (!authToken) {",
+                  "    pm.environment.set('error', 'authToken не знайдено. Спочатку виконайте логін.');",
+                  "    return;",
+                  "}",
+                  "",
+                  "// Встановлюємо Authorization заголовок",
+                  "pm.request.headers.add({",
+                  "    key: 'Authorization',",
+                  "    value: 'Bearer ' + authToken",
+                  "});",
+                  "",
+                  "// Використовуємо збережений ID контакту",
+                  "const createdContactId = pm.environment.get('createdContactId');",
+                  "if (createdContactId) {",
+                  "    pm.request.url.path[2] = createdContactId;",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Перевірка статусу відповіді",
+                  "pm.test('Статус код має бути 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Перевірка структури контакту",
+                  "pm.test('Контакт містить всі необхідні поля', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('id');",
+                  "    pm.expect(responseJson).to.have.property('name');",
+                  "    pm.expect(responseJson).to.have.property('email');",
+                  "    pm.expect(responseJson).to.have.property('phone');",
+                  "    pm.expect(responseJson).to.have.property('favorite');",
+                  "    pm.expect(responseJson).to.have.property('owner');",
+                  "});",
+                  "",
+                  "// Перевірка власника",
+                  "pm.test('Контакт належить поточному користувачу', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    const userId = pm.environment.get('userId');",
+                  "    if (userId) {",
+                  "        pm.expect(responseJson.owner).to.equal(parseInt(userId));",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/contacts/{{createdContactId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "contacts", "{{createdContactId}}"]
+            },
+            "description": "Отримання контакту за ID.\n\n**Автоматизація:**\n- Автоматично додає Authorization заголовок\n- Використовує збережений ID створеного контакту"
+          },
+          "response": []
+        },
+        {
+          "name": "✏️ Оновити контакт",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Перевіряємо наявність токена",
+                  "const authToken = pm.environment.get('authToken');",
+                  "if (!authToken) {",
+                  "    pm.environment.set('error', 'authToken не знайдено. Спочатку виконайте логін.');",
+                  "    return;",
+                  "}",
+                  "",
+                  "// Встановлюємо Authorization заголовок",
+                  "pm.request.headers.add({",
+                  "    key: 'Authorization',",
+                  "    value: 'Bearer ' + authToken",
+                  "});",
+                  "",
+                  "// Використовуємо збережений ID контакту",
+                  "const createdContactId = pm.environment.get('createdContactId');",
+                  "if (createdContactId) {",
+                  "    pm.request.url.path[2] = createdContactId;",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Перевірка статусу відповіді",
+                  "pm.test('Статус код має бути 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Перевірка оновлення даних",
+                  "pm.test('Контакт оновлено успішно', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson.name).to.equal('Updated Contact');",
+                  "    pm.expect(responseJson.email).to.equal('updated.contact@example.com');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Contact\",\n  \"email\": \"updated.contact@example.com\",\n  \"phone\": \"+380994567890\",\n  \"favorite\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/contacts/{{createdContactId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "contacts", "{{createdContactId}}"]
+            },
+            "description": "Оновлення контакту за ID.\n\n**Автоматизація:**\n- Автоматично додає Authorization заголовок\n- Використовує збережений ID створеного контакту"
+          },
+          "response": []
+        },
+        {
+          "name": "⭐ Змінити статус favorite",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Перевіряємо наявність токена",
+                  "const authToken = pm.environment.get('authToken');",
+                  "if (!authToken) {",
+                  "    pm.environment.set('error', 'authToken не знайдено. Спочатку виконайте логін.');",
+                  "    return;",
+                  "}",
+                  "",
+                  "// Встановлюємо Authorization заголовок",
+                  "pm.request.headers.add({",
+                  "    key: 'Authorization',",
+                  "    value: 'Bearer ' + authToken",
+                  "});",
+                  "",
+                  "// Використовуємо збережений ID контакту",
+                  "const createdContactId = pm.environment.get('createdContactId');",
+                  "if (createdContactId) {",
+                  "    pm.request.url.path[2] = createdContactId;",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Перевірка статусу відповіді",
+                  "pm.test('Статус код має бути 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Перевірка зміни статусу",
+                  "pm.test('Статус favorite змінено', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('favorite');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"favorite\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/contacts/{{createdContactId}}/favorite",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "contacts", "{{createdContactId}}", "favorite"]
+            },
+            "description": "Зміна статусу favorite контакту.\n\n**Автоматизація:**\n- Автоматично додає Authorization заголовок\n- Використовує збережений ID створеного контакту"
+          },
+          "response": []
+        },
+        {
+          "name": "🗑️ Видалити контакт",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Перевіряємо наявність токена",
+                  "const authToken = pm.environment.get('authToken');",
+                  "if (!authToken) {",
+                  "    pm.environment.set('error', 'authToken не знайдено. Спочатку виконайте логін.');",
+                  "    return;",
+                  "}",
+                  "",
+                  "// Встановлюємо Authorization заголовок",
+                  "pm.request.headers.add({",
+                  "    key: 'Authorization',",
+                  "    value: 'Bearer ' + authToken",
+                  "});",
+                  "",
+                  "// Використовуємо збережений ID контакту",
+                  "const createdContactId = pm.environment.get('createdContactId');",
+                  "if (createdContactId) {",
+                  "    pm.request.url.path[2] = createdContactId;",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Перевірка статусу відповіді",
+                  "pm.test('Статус код має бути 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Перевірка структури відповіді",
+                  "pm.test('Відповідь містить видалений контакт', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('id');",
+                  "    pm.expect(responseJson).to.have.property('name');",
+                  "});",
+                  "",
+                  "// Очищення змінної після видалення",
+                  "pm.environment.unset('createdContactId');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/contacts/{{createdContactId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "contacts", "{{createdContactId}}"]
+            },
+            "description": "Видалення контакту за ID.\n\n**Автоматизація:**\n- Автоматично додає Authorization заголовок\n- Використовує збережений ID створеного контакту\n- Очищає змінну після видалення"
+          },
+          "response": []
+        }
+      ],
+      "description": "Група запитів для роботи з контактами (потребує аутентифікації)."
+    },
+    {
+      "name": "🧪 Тестування помилок",
+      "item": [
+        {
+          "name": "❌ Реєстрація з невалідними даними",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Перевірка статусу відповіді",
+                  "pm.test('Статус код має бути 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "// Перевірка повідомлення про помилку",
+                  "pm.test('Відповідь містить повідомлення про помилку', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('message');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"invalid-email\",\n  \"password\": \"123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Тестування валідації при реєстрації з невалідними даними."
+          },
+          "response": []
+        },
+        {
+          "name": "❌ Вхід з невірними обліковими даними",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Перевірка статусу відповіді",
+                  "pm.test('Статус код має бути 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "// Перевірка повідомлення про помилку",
+                  "pm.test('Відповідь містить повідомлення про помилку', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('message');",
+                  "    pm.expect(responseJson.message).to.equal('Email or password is wrong');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"wrong@example.com\",\n  \"password\": \"wrongpassword\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Тестування входу з невірними обліковими даними."
+          },
+          "response": []
+        },
+        {
+          "name": "❌ Доступ без токена",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Перевірка статусу відповіді",
+                  "pm.test('Статус код має бути 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "// Перевірка повідомлення про помилку",
+                  "pm.test('Відповідь містить повідомлення про помилку', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('message');",
+                  "    pm.expect(responseJson.message).to.equal('Not authorized');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/contacts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "contacts"]
+            },
+            "description": "Тестування доступу до захищених ресурсів без токена."
+          },
+          "response": []
+        }
+      ],
+      "description": "Група тестів для перевірки обробки помилок та валідації."
+    }
+  ]
+}

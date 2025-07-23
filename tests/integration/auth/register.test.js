@@ -4,10 +4,8 @@ import { User } from '../../../src/models/index.js';
 import sequelize from '../../../src/db/connection.js';
 import { HTTP_STATUS } from '../../helpers/testConstants.js';
 import { 
-  createTestUser, 
   testSuccessfulAuthResponse, 
-  testAuthError,
-  VALIDATION_TEST_CASES 
+  testAuthError
 } from '../../helpers/authTestHelpers.js';
 
 describe('POST /api/auth/register', () => {

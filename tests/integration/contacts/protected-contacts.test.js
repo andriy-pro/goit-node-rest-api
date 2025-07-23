@@ -12,14 +12,12 @@
 import request from 'supertest';
 import app from '../../../src/app.js';
 import sequelize from '../../../src/db/connection.js';
-import { HTTP_STATUS } from '../../helpers/testConstants.js';
+
 import { 
   createAuthenticatedUser,
   testAuthError
 } from '../../helpers/authTestHelpers.js';
 import {
-  createTestContact,
-  createTestContacts,
   createContactsForTwoUsers,
   expectContactOwnership,
   expectContactStructure,

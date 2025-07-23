@@ -2,7 +2,7 @@ import request from 'supertest';
 import app from '../../../src/app.js';
 import { User } from '../../../src/models/index.js';
 import sequelize from '../../../src/db/connection.js';
-import { HTTP_STATUS } from '../../helpers/testConstants.js';
+
 import { 
   createAuthenticatedUser,
   createAuthToken,

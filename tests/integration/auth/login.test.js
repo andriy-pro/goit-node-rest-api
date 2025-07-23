@@ -5,7 +5,6 @@ import sequelize from '../../../src/db/connection.js';
 import { HTTP_STATUS } from '../../helpers/testConstants.js';
 import { 
   createTestUser, 
-  createAuthToken,
   testSuccessfulAuthResponse, 
   testAuthError,
   testJWTToken

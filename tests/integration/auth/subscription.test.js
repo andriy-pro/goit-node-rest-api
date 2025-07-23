@@ -15,7 +15,7 @@ import sequelize from '../../../src/db/connection.js';
 import { createAuthenticatedUser, testAuthError } from '../../helpers/authTestHelpers.js';
 
 describe('User Subscription Update', () => {
-  let user, token;
+  let token;
 
   beforeEach(async () => {
     await sequelize.sync({ force: true });
@@ -26,7 +26,7 @@ describe('User Subscription Update', () => {
       password: 'password123'
     });
     
-    user = authData.user;
+
     token = authData.token;
   });
 
