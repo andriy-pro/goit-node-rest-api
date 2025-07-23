@@ -1,5 +1,6 @@
 # goit-node-rest-api
 
+[![Node.js CI](https://github.com/andriy-pro/goit-node-rest-api/workflows/GoIT%20Node.js%20REST%20API%20-%20CI%2FCD%20Pipeline/badge.svg)](https://github.com/andriy-pro/goit-node-rest-api/actions)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
 [![npm Version](https://img.shields.io/badge/npm-%3E%3D8.0.0-brightgreen.svg)](https://www.npmjs.com/)
 [![Sequelize](https://img.shields.io/badge/Sequelize-6.37.7-blue.svg)](https://sequelize.org/)

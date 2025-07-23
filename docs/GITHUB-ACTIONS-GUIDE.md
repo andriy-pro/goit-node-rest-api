@@ -2,68 +2,73 @@
 
 ## 📋 Огляд конвеєра
 
-Наш CI/CD конвеєр автоматично перевіряє код, запускає тести та готує додаток до розгортання при кожному push або pull request.
+Наш CI/CD конвеєр автоматично перевіряє код, запускає тести та готує додаток до
+розгортання при кожному push або pull request.
 
 ## 🎯 Що перевіряє конвеєр
 
 ### 1. 🔍 **Code Quality & Linting**
+
 - ESLint перевірка якості коду
 - Дотримання стандартів кодування
 - Виявлення потенційних помилок
 
 ### 2. 🧪 **Testing Matrix**
+
 - **Unit тести** - сервіси та бізнес-логіка
 - **Integration тести** - повний API workflow
-- **Множинні версії Node.js** (18.x, 20.x, 22.x)
+- **Множинні версії Node.js** (18.x, 20.x, 22.x) - перевірка сумісності
 - **Test coverage** звіти
 
+**Чому тестуємо на різних версіях Node.js?**
+
+- **18.x** - LTS версія (довгострокова підтримка)
+- **20.x** - поточна LTS версія (рекомендована)
+- **22.x** - найновіша версія (майбутня LTS)
+- Це гарантує, що код працює на всіх підтримуваних версіях
+
 ### 3. 🏗️ **Build & Health Check**
+
 - Запуск додатку
 - Health check endpoints
 - Перевірка доступності API
 
 ### 4. 🔒 **Security Audit**
+
 - npm audit для вразливостей
 - Перевірка залежностей
-- Security scanning
-
-### 5. 📈 **Performance Tests** (тільки для main)
-- Тест швидкості відповіді API
-- Перевірка, що API відповідає < 2 секунд
 
 ## 🚀 Налаштування GitHub Actions
 
-### Крок 1: Структура файлів
-
-Файл `.github/workflows/ci.yml` вже створений і містить повний конвеєр.
-
-### Крок 2: Перевірка package.json
+### Крок 1: Перевірка package.json
 
 Переконайтеся, що у `package.json` є необхідні скрипти:
 
 ```json
 {
-  \"scripts\": {
-    \"start\": \"node server.js\",
-    \"dev\": \"nodemon server.js\",
-    \"test\": \"node --experimental-vm-modules node_modules/jest/bin/jest.js\",
-    \"lint\": \"eslint .\"
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "lint": "eslint ."
   }
 }
 ```
 
-### Крок 3: Активація GitHub Actions
+### Крок 2: Активація GitHub Actions
 
 1. **Push до репозиторію:**
+
    ```bash
    git add .github/workflows/ci.yml
-   git commit -m \"feat: додати GitHub Actions CI/CD конвеєр\"
+   git commit -m "feat: додати GitHub Actions CI/CD конвеєр"
    git push origin main
    ```
 
 2. **Перевірка запуску:**
    - Йдіть на GitHub → ваш репозиторій → вкладка **Actions**
-   - Ви маєте побачити запущений workflow \"GoIT Node.js REST API - CI/CD Pipeline\"
+   - Ви маєте побачити запущений workflow "GoIT Node.js REST API - CI/CD
+     Pipeline"
 
 ## 📊 Інтерпретація результатів
 
@@ -118,13 +123,14 @@ npm test -- --verbose
 ### Проблема: Сервер не запускається
 
 Перевірте:
+
 1. Файл `server.js` існує
 2. Правильний import в `server.js`
 3. Порт не зайнятий
 
 ```javascript
 // server.js
-import app from './src/app.js';
+import app from "./src/app.js";
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
@@ -145,43 +151,6 @@ npm audit fix
 npm audit --audit-level=high
 ```
 
-## 🎯 Покращення конвеєра
-
-### 1. Додавання нових тестів
-
-```yaml
-# Додайте у ci.yml після integration тестів
-- name: 🎭 Run E2E tests
-  run: npm run test:e2e
-```
-
-### 2. Code coverage badge
-
-Додайте у README.md:
-
-```markdown
-![Coverage](https://codecov.io/gh/yourusername/goit-node-rest-api/branch/main/graph/badge.svg)
-```
-
-### 3. Deployment до staging
-
-```yaml
-# Новий джоб після successful build
-deploy-staging:
-  name: 🚀 Deploy to Staging
-  runs-on: ubuntu-latest
-  needs: [lint, test, build]
-  if: github.ref == 'refs/heads/main'
-
-  steps:
-  - name: Deploy to Heroku
-    uses: akhileshns/heroku-deploy@v3.12.12
-    with:
-      heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-      heroku_app_name: \"your-app-staging\"
-      heroku_email: \"your-email@example.com\"
-```
-
 ## 📈 Моніторинг та метрики
 
 ### GitHub Actions Usage
@@ -193,12 +162,29 @@ deploy-staging:
 ### Performance Metrics
 
 Конвеєр відстежує:
+
 - ⏱️ **Час виконання тестів**
 - 📊 **Test coverage %**
 - 🚀 **Час запуску сервера**
-- 📈 **Швидкість API відповідей**
 
 ## 🔐 Secrets та змінні
+
+### Безпека змінних середовищ
+
+**Важливо:** У цьому проєкті тести запускаються локально, тому:
+
+- `.env` файл НЕ комітиться в git (додано в .gitignore)
+- CI/CD НЕ має доступу до твоїх секретів
+- Жодні паролі не передаються в GitHub Actions
+- Це забезпечує максимальну безпеку
+
+### Коли потрібні secrets
+
+Secrets потрібні тільки якщо:
+
+- Тести потребують реальної бази даних
+- API використовує зовнішні сервіси
+- Потрібен доступ до приватних ресурсів
 
 ### Додавання secrets
 
@@ -207,7 +193,6 @@ deploy-staging:
 3. Додайте необхідні змінні:
 
 ```
-HEROKU_API_KEY=your-heroku-key
 DATABASE_URL=your-db-url
 JWT_SECRET=your-jwt-secret
 ```
@@ -218,37 +203,6 @@ JWT_SECRET=your-jwt-secret
 env:
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
   JWT_SECRET: ${{ secrets.JWT_SECRET }}
-```
-
-## 🎛️ Advanced налаштування
-
-### 1. Conditional Jobs
-
-```yaml
-# Запуск тільки для main гілки
-if: github.ref == 'refs/heads/main'
-
-# Запуск тільки при зміні певних файлів
-if: contains(github.event.head_commit.message, '[deploy]')
-```
-
-### 2. Matrix Testing
-
-```yaml
-strategy:
-  matrix:
-    node-version: [18.x, 20.x, 22.x]
-    os: [ubuntu-latest, windows-latest, macos-latest]
-```
-
-### 3. Caching оптимізація
-
-```yaml
-- name: Cache node modules
-  uses: actions/cache@v4
-  with:
-    path: ~/.npm
-    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
 ```
 
 ## 📋 Checklist активації
@@ -265,10 +219,9 @@ strategy:
 
 Цей CI/CD конвеєр демонструє:
 
-✅ **DevOps практики** - автоматизація процесів розробки
-✅ **Quality Gates** - автоматична перевірка якості коду
-✅ **Testing Strategy** - комплексне тестування на різних рівнях
-✅ **Security** - автоматична перевірка вразливостей
+✅ **DevOps практики** - автоматизація процесів розробки ✅ **Quality Gates** -
+автоматична перевірка якості коду ✅ **Testing Strategy** - комплексне
+тестування на різних рівнях ✅ **Security** - автоматична перевірка вразливостей
 ✅ **Monitoring** - відстеження метрик та продуктивності
 
 ## 🔗 Корисні посилання
@@ -280,5 +233,5 @@ strategy:
 
 ---
 
-**🎓 Створено для курсу GoIT \"Fullstack. Back End Development: Node.js\"**
-**📅 Тема 4: REST API + DevOps Best Practices**
+**🎓 Створено для курсу GoIT "Fullstack. Back End Development: Node.js"** **📅
+Тема 4: REST API + DevOps Best Practices**
