@@ -1,13 +1,18 @@
 # goit-node-rest-api
 
 [![Node.js CI](https://github.com/andriy-pro/goit-node-rest-api/workflows/GoIT%20Node.js%20REST%20API%20-%20CI%2FCD%20Pipeline/badge.svg)](https://github.com/andriy-pro/goit-node-rest-api/actions)
+[![Coverage](https://img.shields.io/badge/coverage-92.13%25-brightgreen.svg)](https://jestjs.io/)
+[![License](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](https://opensource.org/licenses/GPL-3.0)
+
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
-[![npm Version](https://img.shields.io/badge/npm-%3E%3D8.0.0-brightgreen.svg)](https://www.npmjs.com/)
-[![Sequelize](https://img.shields.io/badge/Sequelize-6.37.7-blue.svg)](https://sequelize.org/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-%3E%3D12.0-blue.svg)](https://www.postgresql.org/)
-[![Jest Coverage](https://img.shields.io/badge/coverage-92.13%25-brightgreen.svg)](https://jestjs.io/)
+[![Express](https://img.shields.io/badge/Express-4.21.1-blue.svg)](https://expressjs.com/)
 [![ES Modules](https://img.shields.io/badge/ES--Modules-✅-green.svg)](https://nodejs.org/api/esm.html)
-[![dotenv](https://img.shields.io/badge/dotenv-✅-green.svg)](https://www.npmjs.com/package/dotenv)
+
+[![Sequelize](https://img.shields.io/badge/Sequelize-6.37.7-blue.svg)](https://sequelize.org/)
+[![PostgreSQL Client](https://img.shields.io/badge/pg-8.16.3-blue.svg)](https://www.npmjs.com/package/pg)
+
+[![Jest](https://img.shields.io/badge/Jest-29.7.0-blue.svg)](https://jestjs.io/)
+[![npm Version](https://img.shields.io/badge/npm-%3E%3D8.0.0-brightgreen.svg)](https://www.npmjs.com/)
 
 Repository for the homework solution from the GoIT course 'Fullstack. Back End
 Development: Node.js', Topic 6: PostgreSQL and Sequelize.
