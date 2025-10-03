@@ -13,12 +13,18 @@ import express from "express";
 import morgan from "morgan";
 import cors from "cors";
 import helmet from "helmet";
+import path from "path";
+import { fileURLToPath } from "url";
 
 import contactsRouter from "./routes/contactsRouter.js";
 import authRouter from "./routes/authRouter.js";
 import errorHandler from "./middlewares/errorHandler.js";
 
 const app = express();
+
+// ESM-сумісний спосіб отримання __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Security HTTP headers
 app.use(helmet());
@@ -31,6 +37,9 @@ app.use(cors());
 
 // JSON parsing
 app.use(express.json());
+
+// Static files serving
+app.use(express.static(path.join(__dirname, "../public")));
 
 // API routes for contacts
 app.use("/api/contacts", contactsRouter);
