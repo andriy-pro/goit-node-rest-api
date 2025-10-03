@@ -20,6 +20,8 @@ import {
   getCurrentUser,
   updateSubscription
 } from '../controllers/authControllers.js';
+import { updateAvatar } from '../controllers/avatarController.js';
+import upload from '../middlewares/upload.js';
 
 const router = express.Router();
 
@@ -63,5 +65,20 @@ router.get('/current', authenticateToken, getCurrentUser);
  * Response: { email, subscription }
  */
 router.patch('/subscription', authenticateToken, validateBody(subscriptionSchema), updateSubscription);
+
+/**
+ * PATCH /api/auth/avatars
+ * Оновлення аватара користувача (потребує аутентифікації)
+ * Headers: Authorization: Bearer <token>
+ * Content-Type: multipart/form-data
+ * Body: avatar file (JPEG, PNG, GIF, WebP, max 5MB)
+ * Response: { avatarURL: string }
+ */
+router.patch(
+  '/avatars',
+  authenticateToken,
+  upload.single('avatar'),
+  updateAvatar
+);
 
 export default router; 
