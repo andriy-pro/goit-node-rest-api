@@ -159,7 +159,14 @@ web_modules/
 
 # Gatsby files
 .cache/
-public/
+# public/ - commented out, we need public folder for static files
+
+# Avatar uploads (except test files)
+public/avatars/*.jpg
+public/avatars/*.png
+public/avatars/*.gif
+public/avatars/*.webp
+!public/avatars/test-avatar.png
 
 # Grunt intermediate storage
 .grunt/
@@ -224,6 +231,7 @@ pids/
 
 # Temporary folders
 temp/
+!temp/.gitkeep
 tmp/
 
 # TernJS port file
