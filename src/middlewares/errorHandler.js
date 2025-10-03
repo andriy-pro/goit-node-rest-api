@@ -3,7 +3,21 @@
  * Обробляє всі помилки в додатку та повертає стандартизовані відповіді
  */
 
+import multer from 'multer';
+
 const errorHandler = (err, req, res, _next) => {
+  // Multer file upload errors
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({
+        message: 'File too large. Maximum size is 5MB.'
+      });
+    }
+    return res.status(400).json({
+      message: err.message
+    });
+  }
+
   // Якщо це наш HttpError
   if (err.status) {
     return res.status(err.status).json({
