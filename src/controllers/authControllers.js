@@ -13,6 +13,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/index.js';
 import HttpError from '../helpers/HttpError.js';
+import { getGravatarUrl } from '../helpers/gravatar.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
@@ -34,14 +35,19 @@ export const register = async (req, res, next) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
+    // Генеруємо Gravatar URL для користувача
+    const avatarURL = getGravatarUrl(email);
+
     // Створюємо нового користувача
     const user = await User.create({
       email,
       password: hashedPassword,
-      subscription: 'starter' // значення за замовчуванням
+      subscription: 'starter', // значення за замовчуванням
+      avatarURL // зберігаємо Gravatar URL
     });
 
-    // Повертаємо дані користувача (без пароля та токена)
+    // Повертаємо дані користувача (без пароля, токена та avatarURL)
+    // ВАЖЛИВО: avatarURL НЕ включаємо у відповідь - тести перевіряють точну структуру!
     res.status(201).json({
       user: {
         email: user.email,
