@@ -15,6 +15,7 @@ import sequelize from '../db/connection.js';
 /**
  * Модель User з валідацією полів
  * Відповідає вимогам Topic 7: Authentication and Authorization
+ * Topic 9: Додано поле avatarURL для зберігання аватарів
  */
 const User = sequelize.define(
   'user',
@@ -69,6 +70,13 @@ const User = sequelize.define(
       type: DataTypes.STRING,
       defaultValue: null,
       allowNull: true
+    },
+    avatarURL: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: null,
+      // НЕ додаємо validate: { isUrl: true }
+      // бо поле зберігає як зовнішні URL (Gravatar), так і відносні шляхи (/avatars/xxx.jpg)
     }
   },
   {
