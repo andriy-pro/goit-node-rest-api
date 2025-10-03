@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "GoIT Node.js REST API - Topic 7: Authentication & Authorization",
-    "description": "Фінальна колекція для тестування REST API з JWT аутентифікацією. Включає повну автоматизацію токенів, унікальні email адреси та оптимізовані тести.",
+    "description": "Kолекція для тестування REST API з JWT аутентифікацією.",
     "version": "3.0.0",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_postman_id": "goit-node-rest-api-auth-final",
@@ -137,19 +137,32 @@
               "listen": "prerequest",
               "script": {
                 "exec": [
-                  "// Використовуємо збережений унікальний email",
-                  "const uniqueEmail = pm.environment.get('uniqueEmail');",
-                  "if (!uniqueEmail) {",
-                  "    pm.environment.set('error', 'uniqueEmail не знайдено. Спочатку виконайте реєстрацію.');",
-                  "    return;",
-                  "}",
+                  "// ПРИМІТКА: Цей скрипт НЕ перезаписує body, якщо там вже вказаний email",
+                  "// Це дозволяє вручну вводити email (наприклад mail@andriy.pro)",
                   "",
-                  "// Оновлюємо body запиту",
-                  "const requestBody = {",
-                  "  email: uniqueEmail,",
-                  "  password: \"password123\"",
-                  "};",
-                  "pm.request.body.raw = JSON.stringify(requestBody, null, 2);"
+                  "try {",
+                  "    const currentBody = JSON.parse(pm.request.body.raw);",
+                  "    ",
+                  "    // Якщо body містить реальний email (не змінну) - не перезаписуємо",
+                  "    if (currentBody.email && ",
+                  "        currentBody.email !== '{{uniqueEmail}}' && ",
+                  "        !currentBody.email.includes('{{')) {",
+                  "        // Користувач вручну вказав email, нічого не міняємо",
+                  "        return;",
+                  "    }",
+                  "    ",
+                  "    // Якщо є збережений uniqueEmail - використовуємо його",
+                  "    const uniqueEmail = pm.environment.get('uniqueEmail');",
+                  "    if (uniqueEmail) {",
+                  "        const requestBody = {",
+                  "            email: uniqueEmail,",
+                  "            password: \"password123\"",
+                  "        };",
+                  "        pm.request.body.raw = JSON.stringify(requestBody, null, 2);",
+                  "    }",
+                  "} catch (e) {",
+                  "    // Помилка парсингу - нічого не робимо",
+                  "}"
                 ],
                 "type": "text/javascript"
               }
@@ -539,10 +552,18 @@
                   "// Перевірка пагінації",
                   "pm.test('Відповідь містить метадані пагінації', function () {",
                   "    const responseJson = pm.response.json();",
-                  "    pm.expect(responseJson).to.have.property('total');",
-                  "    pm.expect(responseJson).to.have.property('page');",
-                  "    pm.expect(responseJson).to.have.property('limit');",
-                  "});"
+                  "    pm.expect(responseJson).to.have.property('pagination');",
+                  "    pm.expect(responseJson.pagination).to.have.property('totalCount');",
+                  "    pm.expect(responseJson.pagination).to.have.property('page');",
+                  "    pm.expect(responseJson.pagination).to.have.property('limit');",
+                  "    pm.expect(responseJson.pagination).to.have.property('totalPages');",
+                  "});",
+                  "",
+                  "// Зберігаємо перший контакт для подальших тестів (якщо є)",
+                  "const responseJson = pm.response.json();",
+                  "if (responseJson.contacts && responseJson.contacts.length > 0) {",
+                  "    pm.environment.set('testContactId', responseJson.contacts[0].id);",
+                  "}"
                 ],
                 "type": "text/javascript"
               }
@@ -556,7 +577,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "contacts"]
             },
-            "description": "Отримання всіх контактів користувача.\n\n**Автоматизація:**\n- Автоматично додає Authorization заголовок\n- Перевіряє структуру відповіді з пагінацією"
+            "description": "Отримання всіх контактів користувача.\n\n⚠️ ПРИМІТКА: Якщо отримуєте порожній масив [] - користувач не має контактів.\nРішення:\n1. Запустіть: npm run seed\n2. Увійдіть як: mail@andriy.pro / goit2025 ⭐ РЕКОМЕНДОВАНО\n3. Або створіть контакт через '➕ Створити контакт'\n\nДля mail@andriy.pro перший контакт буде Vladyslav Apelhants ⭐ (у фаворитах)\n\n**Автоматизація:**\n- Автоматично додає Authorization заголовок\n- Перевіряє структуру відповіді з пагінацією\n- Зберігає ID першого контакту для подальших тестів"
           },
           "response": []
         },

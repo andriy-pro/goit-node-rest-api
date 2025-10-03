@@ -3,7 +3,7 @@
  * Обробляє всі помилки в додатку та повертає стандартизовані відповіді
  */
 
-const errorHandler = (err, req, res, next) => {
+const errorHandler = (err, req, res, _next) => {
   // Якщо це наш HttpError
   if (err.status) {
     return res.status(err.status).json({

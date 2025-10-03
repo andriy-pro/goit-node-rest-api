@@ -285,12 +285,41 @@ ResponseBody: {
 
 ## Додаткове завдання (необов'язкове)
 
-- Зробити пагінацію для колекції контактів (GET /api/contacts?page=1&limit=20).
-- Зробити фільтрацію контактів по полю обраного (GET
+- ✅ Зробити пагінацію для колекції контактів (GET
+  /api/contacts?page=1&limit=20).
+- ✅ Зробити фільтрацію контактів по полю обраного (GET
   /api/contacts?favorite=true)
-- Оновлення підписки (`subscription`) користувача через ендпоінт `PATCH`
+- ✅ Оновлення підписки (`subscription`) користувача через ендпоінт `PATCH`
   `/api/auth/subscription`. Підписка повинна мати одне з наступних значень
   `['starter', 'pro', 'business']`
+- ✅ **Додатково:** Сортування контактів (GET
+  /api/contacts?sortBy=name&sortOrder=ASC)
+
+### Підтримка сортування
+
+API підтримує гнучке сортування контактів:
+
+**Доступні поля для сортування:**
+
+- `name` - За іменем (за замовчуванням)
+- `email` - За email адресою
+- `createdAt` - За датою створення
+- `favorite` - За статусом favorite
+
+**Порядок сортування:**
+
+- `ASC` - За зростанням (А→Я)
+- `DESC` - За спаданням (Я→А)
+
+**Приклади:**
+
+```
+GET /api/contacts?sortBy=name&sortOrder=ASC
+GET /api/contacts?sortBy=createdAt&sortOrder=DESC
+GET /api/contacts?page=1&limit=10&favorite=true&sortBy=name
+```
+
+Детальніше: [docs/SORTING-AND-LOCALE-GUIDE.md](docs/SORTING-AND-LOCALE-GUIDE.md)
 
 ---
 

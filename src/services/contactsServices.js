@@ -23,6 +23,8 @@ import { Contact } from '../models/index.js';
  * @param {number} [options.page=1] - Номер сторінки (починається з 1)
  * @param {number} [options.limit=20] - Кількість контактів на сторінці
  * @param {boolean} [options.favorite] - Фільтр по статусу favorite (true/false)
+ * @param {string} [options.sortBy='name'] - Поле для сортування ('name' або 'createdAt')
+ * @param {string} [options.sortOrder='ASC'] - Порядок сортування ('ASC' або 'DESC')
  * @returns {Promise<Object>} Об'єкт з контактами та метаданими пагінації
  * @throws {Error} - Помилки роботи з базою даних
  *
@@ -35,11 +37,17 @@ import { Contact } from '../models/index.js';
  * // Отримати тільки favorite контакти
  * const favorites = await listContacts(userId, { favorite: true });
  *
- * // Отримати другу сторінку з фільтрацією
- * const page2 = await listContacts(userId, { page: 2, limit: 5, favorite: false });
+ * // Отримати другу сторінку з фільтрацією та сортуванням
+ * const page2 = await listContacts(userId, { page: 2, limit: 5, favorite: false, sortBy: 'name' });
  */
 export const listContacts = async (ownerId, options = {}) => {
-  const { page = 1, limit = 20, favorite } = options;
+  const { 
+    page = 1, 
+    limit = 20, 
+    favorite,
+    sortBy = 'name',
+    sortOrder = 'ASC'
+  } = options;
   
   // Базові умови запиту
   const whereCondition = { owner: ownerId };
@@ -52,10 +60,22 @@ export const listContacts = async (ownerId, options = {}) => {
   // Розраховуємо offset для пагінації
   const offset = (page - 1) * limit;
   
-  // Отримуємо контакти з пагінацією
+  // Валідація параметрів сортування
+  const allowedSortFields = ['name', 'email', 'createdAt', 'favorite'];
+  const allowedSortOrders = ['ASC', 'DESC'];
+  
+  const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'name';
+  const validSortOrder = allowedSortOrders.includes(sortOrder.toUpperCase()) 
+    ? sortOrder.toUpperCase() 
+    : 'ASC';
+  
+  // Отримуємо контакти з пагінацією та сортуванням
   const contacts = await Contact.findAll({
     where: whereCondition,
-    order: [['createdAt', 'DESC']],
+    order: [
+      [validSortBy, validSortOrder],   // Основне сортування
+      ['id', 'ASC']                     // Додаткове сортування для стабільності
+    ],
     limit: parseInt(limit),
     offset: parseInt(offset),
   });
