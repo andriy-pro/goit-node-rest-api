@@ -2,21 +2,21 @@
  * Централізований error handler middleware
  * Обробляє всі помилки в додатку та повертає стандартизовані відповіді
  */
-
 import multer from 'multer';
 
 const errorHandler = (err, req, res, _next) => {
-  // Multer file upload errors
-  if (err instanceof multer.MulterError) {
+  // Multer errors (наприклад, перевищено розмір файлу)
+  if (err instanceof multer.MulterError || err?.name === 'MulterError') {
     if (err.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({
         message: 'File too large. Maximum size is 5MB.'
       });
     }
     return res.status(400).json({
-      message: err.message
+      message: err.message || 'File upload error'
     });
   }
+
 
   // Якщо це наш HttpError
   if (err.status) {

@@ -8,6 +8,7 @@ import chalk from 'chalk';
 import sequelize from '../connection.js';
 import User from '../../models/User.js';
 import Contact from '../../models/Contact.js';
+import { getGravatarUrl } from '../../helpers/gravatar.js';
 
 
 
@@ -100,10 +101,12 @@ async function createUsers() {
   const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, BCRYPT_ROUNDS);
 
   // Створюємо обов'язкового користувача Andriy Nechyporenko
+  const andriyEmail = 'mail@andriy.pro';
   const andriyUser = await User.create({
-    email: 'mail@andriy.pro',
+    email: andriyEmail,
     password: hashedPassword,
     subscription: 'pro',
+    avatarURL: getGravatarUrl(andriyEmail)
   });
   users.push(andriyUser);
   console.log(
@@ -117,6 +120,7 @@ async function createUsers() {
       email,
       password: hashedPassword,
       subscription: generateSubscription(i),
+      avatarURL: getGravatarUrl(email)
     });
     users.push(user);
     console.log(
