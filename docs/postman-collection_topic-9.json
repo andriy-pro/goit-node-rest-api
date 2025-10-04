@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "GoIT Node.js REST API - Topic 9: Files & Testing (Avatars)",
-    "description": "Колекція для тестування функціоналу аватарів (Multer, Gravatar) та наявних auth/contacts ендпоїнтів.",
+    "name": "GoIT Node.js REST API - Topic 9: Files & Testing",
+    "description": "Колекція для тестування функціоналу аватарів (Multer, Gravatar) та auth ендпоїнтів.\n\n⚠️ ВАЖЛИВО: Після імпорту колекції:\n1. Запустіть спочатку запити з теки '🧰 Підготовка'\n2. Для запиту '⬆️ Оновити аватар' ВРУЧНУ оберіть файл у Postman:\n   - Відкрийте запит\n   - Перейдіть на вкладку Body\n   - Натисніть 'Select File' для поля 'avatar'\n   - Оберіть файл: public/avatars/test-avatar.png з вашого проєкту",
     "version": "1.0.0",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_postman_id": "goit-node-rest-api-topic-9"
@@ -10,7 +10,8 @@
     { "key": "baseUrl", "value": "http://localhost:3000", "type": "string" },
     { "key": "authToken", "value": "", "type": "string" },
     { "key": "uniqueEmail", "value": "", "type": "string" },
-    { "key": "avatarURL", "value": "", "type": "string" }
+    { "key": "avatarURL", "value": "", "type": "string" },
+    { "key": "userId", "value": "", "type": "string" }
   ],
   "item": [
     {
@@ -23,9 +24,16 @@
               "listen": "prerequest",
               "script": {
                 "exec": [
+                  "// Генеруємо унікальний email для кожного запуску",
                   "const ts = Date.now();",
-                  "pm.environment.set('uniqueEmail', `user${ts}@example.com`);",
-                  "pm.request.body.raw = JSON.stringify({ email: pm.environment.get('uniqueEmail'), password: 'password123' }, null, 2);"
+                  "const uniqueEmail = `user${ts}@example.com`;",
+                  "pm.collectionVariables.set('uniqueEmail', uniqueEmail);",
+                  "",
+                  "// Оновлюємо body запиту",
+                  "pm.request.body.raw = JSON.stringify({",
+                  "  email: uniqueEmail,",
+                  "  password: 'password123'",
+                  "}, null, 2);"
                 ],
                 "type": "text/javascript"
               }
@@ -34,12 +42,37 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('201 Created', () => pm.response.to.have.status(201));",
+                  "pm.test('✅ Status 201 Created', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
                   "const body = pm.response.json();",
-                  "pm.test('response has user with email+subscription', () => {",
+                  "",
+                  "pm.test('✅ Response має user object', () => {",
                   "  pm.expect(body).to.have.property('user');",
+                  "});",
+                  "",
+                  "pm.test('✅ User має email та subscription', () => {",
                   "  pm.expect(body.user).to.have.property('email');",
                   "  pm.expect(body.user).to.have.property('subscription');",
+                  "  pm.expect(body.user.subscription).to.equal('starter');",
+                  "});",
+                  "",
+                  "pm.test('❌ Response НЕ містить password', () => {",
+                  "  pm.expect(body.user).to.not.have.property('password');",
+                  "});",
+                  "",
+                  "pm.test('❌ Response НЕ містить token', () => {",
+                  "  pm.expect(body.user).to.not.have.property('token');",
+                  "});",
+                  "",
+                  "pm.test('❌ Response НЕ містить avatarURL', () => {",
+                  "  pm.expect(body.user).to.not.have.property('avatarURL');",
+                  "});",
+                  "",
+                  "pm.test('✅ User має рівно 2 поля (email, subscription)', () => {",
+                  "  const keys = Object.keys(body.user);",
+                  "  pm.expect(keys).to.have.lengthOf(2);",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -48,9 +81,19 @@
           ],
           "request": {
             "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{uniqueEmail}}\",\n  \"password\": \"password123\"\n}" },
-            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api","auth","register"] }
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{uniqueEmail}}\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Реєструє нового користувача.\nGravatar URL генерується автоматично та зберігається в БД,\nале НЕ повертається в response (згідно з тестами)."
           }
         },
         {
@@ -60,10 +103,38 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('✅ Status 200 OK', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
                   "const body = pm.response.json();",
-                  "pm.test('has token', () => pm.expect(body).to.have.property('token'));",
-                  "if (body.token) pm.environment.set('authToken', body.token);"
+                  "",
+                  "pm.test('✅ Response має token', () => {",
+                  "  pm.expect(body).to.have.property('token');",
+                  "  pm.expect(body.token).to.be.a('string');",
+                  "  pm.expect(body.token.length).to.be.greaterThan(0);",
+                  "});",
+                  "",
+                  "pm.test('✅ Response має user object', () => {",
+                  "  pm.expect(body).to.have.property('user');",
+                  "  pm.expect(body.user).to.have.property('email');",
+                  "  pm.expect(body.user).to.have.property('subscription');",
+                  "});",
+                  "",
+                  "pm.test('✅ User має рівно 2 поля (email, subscription)', () => {",
+                  "  const keys = Object.keys(body.user);",
+                  "  pm.expect(keys).to.have.lengthOf(2);",
+                  "});",
+                  "",
+                  "pm.test('❌ Response НЕ містить avatarURL', () => {",
+                  "  pm.expect(body.user).to.not.have.property('avatarURL');",
+                  "});",
+                  "",
+                  "// Зберігаємо токен для наступних запитів",
+                  "if (body.token) {",
+                  "  pm.collectionVariables.set('authToken', body.token);",
+                  "  console.log('✅ Token збережено:', body.token.substring(0, 20) + '...');",
+                  "}"
                 ],
                 "type": "text/javascript"
               }
@@ -71,12 +142,117 @@
           ],
           "request": {
             "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{uniqueEmail}}\",\n  \"password\": \"password123\"\n}" },
-            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] }
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{uniqueEmail}}\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Логін користувача. Повертає JWT token та дані користувача."
           }
         }
-      ]
+      ],
+      "description": "Підготовчі кроки: реєстрація та логін для отримання токена."
+    },
+    {
+      "name": "👤 Поточний користувач",
+      "item": [
+        {
+          "name": "✅ GET Current User (з токеном)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Status 200 OK', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('✅ Response має email та subscription', () => {",
+                  "  pm.expect(body).to.have.property('email');",
+                  "  pm.expect(body).to.have.property('subscription');",
+                  "});",
+                  "",
+                  "pm.test('✅ Response має рівно 2 поля', () => {",
+                  "  const keys = Object.keys(body);",
+                  "  pm.expect(keys).to.have.lengthOf(2);",
+                  "});",
+                  "",
+                  "pm.test('❌ Response НЕ містить avatarURL', () => {",
+                  "  pm.expect(body).to.not.have.property('avatarURL');",
+                  "});",
+                  "",
+                  "pm.test('❌ Response НЕ містить password', () => {",
+                  "  pm.expect(body).to.not.have.property('password');",
+                  "});",
+                  "",
+                  "pm.test('❌ Response НЕ містить token', () => {",
+                  "  pm.expect(body).to.not.have.property('token');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/current",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "current"]
+            },
+            "description": "Отримання даних поточного користувача.\nПовертає ТІЛЬКИ email та subscription (згідно з вимогами)."
+          }
+        },
+        {
+          "name": "❌ GET Current User (без токена) → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Status 401 Unauthorized', () => {",
+                  "  pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('✅ Response має повідомлення про помилку', () => {",
+                  "  pm.expect(body).to.have.property('message');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/current",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "current"]
+            },
+            "description": "Спроба отримати дані без токена → повинен повернути 401."
+          }
+        }
+      ],
+      "description": "Тестування ендпоїнта /api/auth/current"
     },
     {
       "name": "🖼️ Аватари",
@@ -85,24 +261,201 @@
           "name": "⬆️ Оновити аватар (PATCH /api/auth/avatars)",
           "event": [
             {
-              "listen": "prerequest",
+              "listen": "test",
               "script": {
                 "exec": [
-                  "const token = pm.environment.get('authToken');",
-                  "if (!token) { throw new Error('authToken is missing. Login first.'); }",
-                  "pm.request.headers.add({ key: 'Authorization', value: 'Bearer ' + token });"
+                  "pm.test('✅ Status 200 OK', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('✅ Response має avatarURL', () => {",
+                  "  pm.expect(body).to.have.property('avatarURL');",
+                  "  pm.expect(body.avatarURL).to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test('✅ avatarURL починається з /avatars/', () => {",
+                  "  pm.expect(body.avatarURL).to.match(/^\\/avatars\\//);",
+                  "});",
+                  "",
+                  "pm.test('✅ avatarURL містить розширення файлу', () => {",
+                  "  pm.expect(body.avatarURL).to.match(/\\.(jpg|jpeg|png|gif|webp)$/i);",
+                  "});",
+                  "",
+                  "// Зберігаємо URL для перевірки доступності",
+                  "if (body.avatarURL) {",
+                  "  pm.collectionVariables.set('avatarURL', body.avatarURL);",
+                  "  console.log('✅ Avatar URL збережено:', body.avatarURL);",
+                  "}"
                 ],
                 "type": "text/javascript"
               }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "avatar",
+                  "type": "file",
+                  "src": [],
+                  "description": "⚠️ ВАЖЛИВО: Вручну оберіть файл 'public/avatars/test-avatar.png' після імпорту колекції!\n\nКроки:\n1. Натисніть 'Select Files'\n2. Знайдіть файл test-avatar.png у теці public/avatars/ вашого проєкту\n3. Підтвердіть вибір\n4. Запустіть запит"
+                }
+              ]
             },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/avatars",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "avatars"]
+            },
+            "description": "Завантажує аватар користувача.\n\n⚠️ ВАЖЛИВО:\n- Після імпорту колекції ВРУЧНУ оберіть файл в Postman UI\n- Рекомендований файл: public/avatars/test-avatar.png\n- Файл зберігається у temp/, потім переноситься до public/avatars/\n- Старий аватар видаляється автоматично\n\nПроцес:\n1. Файл → temp/avatar-{timestamp}.ext\n2. Обробка → public/avatars/user-{userId}-{nanoid}.ext\n3. БД оновлюється → avatarURL: /avatars/user-{userId}-{nanoid}.ext\n4. Старий файл видаляється (якщо не Gravatar)"
+          }
+        },
+        {
+          "name": "🔄 Оновити аватар повторно (тест заміни)",
+          "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('✅ Status 200 OK', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
                   "const body = pm.response.json();",
-                  "pm.test('has avatarURL', () => pm.expect(body).to.have.property('avatarURL'));",
-                  "if (body.avatarURL) pm.environment.set('avatarURL', body.avatarURL);"
+                  "const oldAvatarURL = pm.collectionVariables.get('avatarURL');",
+                  "",
+                  "pm.test('✅ Response має новий avatarURL', () => {",
+                  "  pm.expect(body).to.have.property('avatarURL');",
+                  "  pm.expect(body.avatarURL).to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test('✅ Новий avatarURL відрізняється від старого', () => {",
+                  "  pm.expect(body.avatarURL).to.not.equal(oldAvatarURL);",
+                  "});",
+                  "",
+                  "console.log('🔄 Старий avatar:', oldAvatarURL);",
+                  "console.log('✅ Новий avatar:', body.avatarURL);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "avatar",
+                  "type": "file",
+                  "src": [],
+                  "description": "Оберіть той самий або інший файл для тестування заміни аватара"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/avatars",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "avatars"]
+            },
+            "description": "Тестує заміну існуючого аватара.\nСтарий файл повинен бути видалений автоматично."
+          }
+        },
+        {
+          "name": "🌐 Перевірити доступність аватара (HEAD)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Status 200 OK', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('✅ Content-Type є image', () => {",
+                  "  const contentType = pm.response.headers.get('Content-Type');",
+                  "  pm.expect(contentType).to.match(/^image\\//);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "HEAD",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{avatarURL}}",
+              "host": ["{{baseUrl}}{{avatarURL}}"]
+            },
+            "description": "Перевіряє що аватар доступний через static files serving.\nВикористовує URL збережений з попереднього запиту."
+          }
+        },
+        {
+          "name": "🖼️ Відкрити аватар (GET)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Status 200 OK', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('✅ Response є зображенням', () => {",
+                  "  const contentType = pm.response.headers.get('Content-Type');",
+                  "  pm.expect(contentType).to.match(/^image\\/(jpeg|png|gif|webp)/);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{avatarURL}}",
+              "host": ["{{baseUrl}}{{avatarURL}}"]
+            },
+            "description": "Завантажує аватар через static files.\nМожна відкрити в браузері: {{baseUrl}}{{avatarURL}}"
+          }
+        },
+        {
+          "name": "❌ Оновити аватар без токена → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Status 401 Unauthorized', () => {",
+                  "  pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('✅ Response має повідомлення про помилку', () => {",
+                  "  pm.expect(body).to.have.property('message');",
+                  "  pm.expect(body.message).to.include('authorized');",
+                  "});"
                 ],
                 "type": "text/javascript"
               }
@@ -114,44 +467,67 @@
             "body": {
               "mode": "formdata",
               "formdata": [
-                { "key": "avatar", "type": "file", "src": ["public/avatars/test-avatar.png"], "description": "Обрати локальний файл-зображення" }
+                {
+                  "key": "avatar",
+                  "type": "file",
+                  "src": [],
+                  "description": "Файл (але без токена авторизації)"
+                }
               ]
             },
-            "url": { "raw": "{{baseUrl}}/api/auth/avatars", "host": ["{{baseUrl}}"], "path": ["api","auth","avatars"] },
-            "description": "Завантажує аватар у temp, переносить до public/avatars, повертає { avatarURL }"
-          }
-        },
-        {
-          "name": "❌ Оновити аватар без токена (401)",
-          "request": {
-            "method": "PATCH",
-            "header": [],
-            "body": {
-              "mode": "formdata",
-              "formdata": [ { "key": "avatar", "type": "file", "src": ["public/avatars/test-avatar.png"] } ]
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/avatars",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "avatars"]
             },
-            "url": { "raw": "{{baseUrl}}/api/auth/avatars", "host": ["{{baseUrl}}"], "path": ["api","auth","avatars"] }
+            "description": "Спроба завантажити аватар без токена → повинен повернути 401."
           }
         },
         {
-          "name": "❌ Оновити аватар без файлу (400)",
+          "name": "❌ Оновити аватар без файлу → 400",
           "event": [
             {
-              "listen": "prerequest",
-              "script": { "exec": [
-                "const token = pm.environment.get('authToken');",
-                "pm.request.headers.add({ key: 'Authorization', value: 'Bearer ' + token });"
-              ], "type": "text/javascript" }
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Status 400 Bad Request', () => {",
+                  "  pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('✅ Response має повідомлення про відсутність файлу', () => {",
+                  "  pm.expect(body).to.have.property('message');",
+                  "  pm.expect(body.message).to.include('required');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
             }
           ],
           "request": {
             "method": "PATCH",
-            "header": [],
-            "body": { "mode": "formdata", "formdata": [] },
-            "url": { "raw": "{{baseUrl}}/api/auth/avatars", "host": ["{{baseUrl}}"], "path": ["api","auth","avatars"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/avatars",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "avatars"]
+            },
+            "description": "Спроба завантажити без файлу → повинен повернути 400."
           }
         }
-      ]
+      ],
+      "description": "Тестування функціоналу завантаження та оновлення аватарів."
     }
   ]
 }
