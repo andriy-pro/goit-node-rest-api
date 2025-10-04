@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "GoIT Node.js REST API - Topic 9: Files & Testing",
-    "description": "Колекція для тестування функціоналу аватарів (Multer, Gravatar) та auth ендпоїнтів.\n\n⚠️ ВАЖЛИВО: Після імпорту колекції:\n1. Запустіть спочатку запити з теки '🧰 Підготовка'\n2. Для запиту '⬆️ Оновити аватар' ВРУЧНУ оберіть файл у Postman:\n   - Відкрийте запит\n   - Перейдіть на вкладку Body\n   - Натисніть 'Select File' для поля 'avatar'\n   - Оберіть файл: public/avatars/test-avatar.png з вашого проєкту",
+    "description": "Колекція для тестування функціоналу аватарів (Multer, Gravatar) та auth ендпоїнтів.\n\n⚠️ ВАЖЛИВО: Після імпорту колекції:\n1. Запустіть спочатку запити з теки '🧰 Підготовка'\n2. Для запитів '⬆️ Оновити аватар' та '🔄 Оновити аватар повторно' ВРУЧНУ оберіть файл у Postman:\n   - Відкрийте запит\n   - Перейдіть на вкладку Body\n   - Натисніть 'Select File' для поля 'avatar'\n   - Оберіть файл: public/avatars/test-avatar.png з вашого проєкту\n\n3. Запити без файлів (негативні тести) спрацюють автоматично",
     "version": "1.0.0",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_postman_id": "goit-node-rest-api-topic-9"
@@ -27,7 +27,7 @@
                   "// Генеруємо унікальний email для кожного запуску",
                   "const ts = Date.now();",
                   "const uniqueEmail = `user${ts}@example.com`;",
-                  "pm.collectionVariables.set('uniqueEmail', uniqueEmail);",
+                  "pm.environment.set('uniqueEmail', uniqueEmail);",
                   "",
                   "// Оновлюємо body запиту",
                   "pm.request.body.raw = JSON.stringify({",
@@ -132,7 +132,7 @@
                   "",
                   "// Зберігаємо токен для наступних запитів",
                   "if (body.token) {",
-                  "  pm.collectionVariables.set('authToken', body.token);",
+                  "  pm.environment.set('authToken', body.token);",
                   "  console.log('✅ Token збережено:', body.token.substring(0, 20) + '...');",
                   "}"
                 ],
@@ -285,7 +285,7 @@
                   "",
                   "// Зберігаємо URL для перевірки доступності",
                   "if (body.avatarURL) {",
-                  "  pm.collectionVariables.set('avatarURL', body.avatarURL);",
+                  "  pm.environment.set('avatarURL', body.avatarURL);",
                   "  console.log('✅ Avatar URL збережено:', body.avatarURL);",
                   "}"
                 ],
@@ -333,7 +333,7 @@
                   "});",
                   "",
                   "const body = pm.response.json();",
-                  "const oldAvatarURL = pm.collectionVariables.get('avatarURL');",
+                  "const oldAvatarURL = pm.environment.get('avatarURL');",
                   "",
                   "pm.test('✅ Response має новий avatarURL', () => {",
                   "  pm.expect(body).to.have.property('avatarURL');",

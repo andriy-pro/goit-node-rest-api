@@ -1,254 +1,371 @@
-# 🚀 Швидкий старт (коротко)
+# ⚡ Швидкий старт - GoIT Node.js REST API
 
-Перед запуском команд переконайтеся, що ви в теці проєкту:
-`/home/goit/goit/electives/hw/topic-9/goit-node-rest-api/`
-
-1) Встановіть залежності та підготуйте БД (за потреби):
-
-```bash
-npm install
-```
-
-2) Налаштуйте змінні середовища (за потреби):
-
-- створіть .env або використайте дефолти з коду (DB_HOST, DB_NAME тощо)
-
-3) Запустіть сервер:
-
-```bash
-npm run dev
-# або
-npm start
-```
-
-4) (Опційно) Наповніть БД даними для швидкого тестування контактів:
-
-```bash
-npm run seed
-```
-
-Далі можна користуватися Postman колекцією та/або запускати тести.
-
-# ⚡ Як запустити проєкт (дуже коротко)
-
-1. Переконайтесь, що ви в теці проєкту:
-
-```bash
-cd /home/goit/goit/electives/hw/topic-9/goit-node-rest-api
-```
-
-1. Встановіть залежності та (за потреби) налаштуйте .env:
-
-```bash
-npm install
-# створіть .env за потреби (JWT_SECRET, DB_*), або використовуйте значення за замовчуванням
-```
-
-3. Запустіть БД (локально або контейнер) і наповніть тестовими даними (опційно):
-
-```bash
-npm run seed
-```
-
-4. Запустіть сервер:
-
-```bash
-npm run dev
-# або
-npm start
-```
-
-5. Відкрийте Postman і використовуйте колекції:
-
-- Topic 7: docs/postman-collection_topic-7.json
-- Topic 9: docs/postman-collection_topic-9.json (оновлено, з аватарами)
+Короткий гайд для запуску та тестування REST API з функціоналом авторизації,
+контактів та аватарів (Topic 7 & Topic 9).
 
 ---
 
-## 🚀 Швидкий старт
-```bash
-Короткий гайд для швидкого тестування API.
+## 🚀 Запуск проєкту
 
-## 📋 Крок 1: Заповнення бази даних
-
-Перед тестуванням Postman колекції, заповніть базу даних тестовими даними:
+### 1. Підготовка середовища
 
 ```bash
-```
-```
+# Перейдіть у директорію проєкту
+cd /path/to/goit-node-rest-api
 
-**Це створить:**
-
-- 21 користувач:
-  - **<mail@andriy.pro>** (Andriy Nechyporenko) - головний тестовий користувач
-# ⚡ Як запустити проєкт (дуже коротко)
-
-1. Переконайтесь, що ви в теці проєкту:
-
-```bash
-cd /home/goit/goit/electives/hw/topic-9/goit-node-rest-api
-```
-
-2. Встановіть залежності та (за потреби) налаштуйте .env:
-
-```bash
+# Встановіть залежності
 npm install
-# створіть .env за потреби (JWT_SECRET, DB_*), або використовуйте значення за замовчуванням
 ```
 
-1. Запустіть БД (локально або контейнер) і (опційно) наповніть тестовими даними:
+### 2. Налаштування бази даних (опційно)
+
+Створіть файл `.env` у корені проєкту (або використовуйте значення за
+замовчуванням):
+
+```env
+# JWT
+JWT_SECRET=your-secret-key
+
+# PostgreSQL
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=contacts_db
+DB_USER=postgres
+DB_PASSWORD=your-password
+
+# Server
+PORT=3000
+```
+
+### 3. Заповнення тестовими даними (рекомендовано)
 
 ```bash
 npm run seed
 ```
 
-1. Запустіть сервер:
+**Що створює seed (за замовчуванням):**
+
+- **21 користувач** (включаючи "основний тестовий акаунт": mail@andriy.pro,
+  пароль: `goit2025`)
+- **30 контактів** для кожного користувача
+- **Загалом 630 контактів** для тестування пагінації
+
+### 4. Запуск сервера
 
 ```bash
+# Development режим (з nodemon)
 npm run dev
-# або
+
+# Production режим
 npm start
 ```
 
-1. Відкрийте Postman і використовуйте колекції:
-
-- Topic 7: docs/postman-collection_topic-7.json
-- Topic 9: docs/postman-collection_topic-9.json (оновлено, з аватарами)
+Сервер буде доступний на `http://localhost:3000`
 
 ---
 
-## � Швидкий старт (деталі)
+## 📮 Тестування в Postman
 
-Короткий гайд для швидкого тестування API.
+### Крок 1: Імпорт колекцій
 
-## 📋 Крок 1: Заповнення бази даних
+Імпортуйте в Postman одну з колекцій:
 
-Перед тестуванням Postman колекції, заповніть базу даних тестовими даними:
+| Колекція    | Файл                                   | Опис                                 |
+| ----------- | -------------------------------------- | ------------------------------------ |
+| **Topic 7** | `docs/postman-collection_topic-7.json` | Базовий функціонал (auth + contacts) |
+| **Topic 9** | `docs/postman-collection_topic-9.json` | Розширений функціонал (+ аватари)    |
 
-```bash
-npm run seed
-```
+**В Postman:**
 
-**Це створить:**
+1. Натисніть **Import** (вгорі зліва)
+2. Перетягніть JSON файл або натисніть **Upload Files**
+3. Натисніть **Import**
 
-- 21 користувач:
-   - **`mail@andriy.pro`** (Andriy Nechyporenko) — головний тестовий користувач
-   - `user1@example.com` — `user20@example.com`
-- 30 контактів для кожного користувача
-- Всього 630 контактів для тестування пагінації
+### Крок 2: Створення Environment
 
-**Пароль для всіх:** `goit2025` (мінімум 6 символів для Joi валідації)
+Створіть Environment у Postman з назвою `GoIT REST API`:
 
-## 📋 Крок 2: Запуск сервера
+**В Postman:**
 
-```bash
-npm start
-# або для розробки
-npm run dev
-```
+1. Натисніть ⚙️ (Manage Environments)
+2. **Add** → Назва: `GoIT REST API`
+3. Додайте змінну `baseUrl` зі значенням `http://localhost:3000`
+4. Інші змінні залиште порожніми - вони заповнюються автоматично
 
-## 📋 Крок 3: Тестування в Postman
+### Крок 3: Тестування
 
-### Варіант A: Використання існуючих користувачів (після seed)
+Оберіть один з варіантів:
 
-1. **Імпортуйте колекцію:** `docs/postman-collection_topic-7.json`
+#### 🅰️ Варіант A: Існуючий користувач (після seed)
 
-2. **Створіть Environment у Postman:**
+**Колекція:** Topic 7 або Topic 9
 
-   - Name: `GoIT REST API`
-   - Variables:
+1. **Логін:**
 
-     ```text
-     baseUrl: http://localhost:3000
-     authToken: (залиште порожнім)
-     userId: (залиште порожнім)
+   - Відкрийте запит `🔑 Логін (зберігає токен)` або `🔑 Вхід користувача`
+   - Body вже налаштовано:
+     ```json
+     {
+       "email": "mail@andriy.pro",
+       "password": "goit2025"
+     }
      ```
+   - Натисніть **Send**
+   - ✅ Токен автоматично збережеться в Environment
 
-3. **Увійдіть з існуючим користувачем (до прикладу: `mail@andriy.pro`):**
+2. **Перевірка контактів:**
 
-   - Запустіть запит `🔑 Вхід користувача`
-   - Email вже встановлено: `mail@andriy.pro`
-   - Password вже встановлено: `goit2025`
-   - Токен автоматично збережеться
+   - Запустіть `📄 Отримати всі контакти`
+   - ✅ Побачите 30 контактів користувача
+   - Перший контакт: **Vladyslav Apelhants** (у фаворитах)
 
-4. **Тестуйте контакти:**
-   - Запустіть `📄 Отримати всі контакти` — побачите 30 контактів
-   - Перший контакт буде **Vladyslav Apelhants** (у фаворитах)
-   - Тестуйте пагінацію: `?page=1&limit=10`
-   - Тестуйте фільтрацію: `?favorite=true` — побачите Vladyslav Apelhants
+3. **Тестування пагінації:**
+   - `GET /api/contacts?page=1&limit=10` - перші 10 контактів
+   - `GET /api/contacts?page=2&limit=10` - наступні 10
+   - `GET /api/contacts?favorite=true` - тільки улюблені
 
-### Варіант B: Створення нового користувача
+#### 🅱️ Варіант B: Новий користувач (Topic 9)
+
+**Колекція:** Topic 9 (з аватарами)
 
 1. **Реєстрація:**
-   - Запустіть `📝 Реєстрація користувача` — унікальний email згенерується автоматично
 
-2. **Вхід:**
-   - Запустіть `🔑 Вхід користувача` — токен збережеться автоматично
+   - Запустіть `📝 Реєстрація (генерує Gravatar)`
+   - ✅ Унікальний email згенерується автоматично
+   - ✅ Gravatar URL створюється і зберігається в БД
 
-3. **Створіть контакти:**
-   - Запустіть `➕ Створити контакт` декілька разів або використайте Runner
+2. **Логін:**
 
-## 📋 Крок 4: Запуск автоматизованих тестів
+   - Запустіть `🔑 Логін (зберігає токен)`
+   - ✅ Токен автоматично збережеться
+
+3. **Перевірка користувача:**
+
+   - Запустіть `✅ GET Current User (з токеном)`
+   - ✅ Отримаєте `{ email, subscription }`
+
+4. **Завантаження аватара:**
+
+   - Відкрийте запит `⬆️ Оновити аватар (PATCH /api/auth/avatars)`
+   - Перейдіть на вкладку **Body** → **form-data**
+   - Знайдіть поле `avatar` (type = File)
+   - ⚠️ **ВАЖЛИВО:** Натисніть **Select Files**
+   - Оберіть файл: `public/avatars/test-avatar.png`
+   - Натисніть **Send**
+   - ✅ Отримаєте `{ avatarURL: "/avatars/user-X-nanoid.png" }`
+
+Для запиту `🔄 Оновити аватар повторно (тест заміни)` порядок дій аналогічний.
+Обидва запити мають тестуватись **ВРУЧНУ** !
+
+5. **Перевірка аватара:**
+   - Запустіть `🌐 Перевірити доступність аватара (HEAD)`
+   - Запустіть `🖼️ Відкрити аватар (GET)`
+   - ✅ Аватар доступний через статику
+
+---
+
+## 🧪 Автоматизовані тести
+
+### Запуск тестів
 
 ```bash
-# Всі тести
+# Всі тести (Jest)
 npm test
 
-# Тести з покриттям
+# Тести з покриттям коду
 npm run test:coverage
 
-# Лінтинг
+# Лінтинг (ESLint)
 npm run lint
 ```
 
-## 🎯 Швидке тестування пагінації
+### Очікувані результати
 
-Після виконання `npm run seed` та входу як `mail@andriy.pro`:
-
-```text
-GET /api/contacts?page=1&limit=10
-GET /api/contacts?page=2&limit=10
-GET /api/contacts?page=3&limit=10
-
-GET /api/contacts?favorite=true
-GET /api/contacts?favorite=false
-
-GET /api/contacts?page=1&limit=5&favorite=true
+```
+Test Suites: 14 passed, 14 total
+Tests:       146 passed, 146 total
+Snapshots:   0 total
+Time:        ~90s
 ```
 
-## ⚠️ Поширені помилки
+**Що тестується:**
 
-### Порожній масив контактів `[]`
+- 17 unit-тестів для login контролера
+- 131 integration тестів (auth, contacts, subscription)
+- Валідація всіх ендпоїнтів
+- Перевірка структури відповідей
 
-**Проблема:** Ви увійшли з новоствореним користувачем, у якого немає контактів.
+---
+
+## 🔧 Швидкі CLI команди для тестування
+
+### Після запуску сервера (`npm run dev`):
+
+```bash
+# Реєстрація нового користувача
+curl -X POST http://localhost:3000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"password123"}'
+
+# Логін
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"password123"}'
+# Відповідь: { "token": "...", "user": {...} }
+
+# Збережіть токен у змінну:
+TOKEN="your-token-from-login-response"
+
+# Поточний користувач
+curl -X GET http://localhost:3000/api/auth/current \
+  -H "Authorization: Bearer $TOKEN"
+
+# Отримати всі контакти
+curl -X GET http://localhost:3000/api/auth/current \
+  -H "Authorization: Bearer $TOKEN"
+
+# Створити контакт
+curl -X POST http://localhost:3000/api/contacts \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"John Doe","email":"john@example.com","phone":"+380991234567"}'
+
+# Пагінація
+curl -X GET "http://localhost:3000/api/contacts?page=1&limit=5" \
+  -H "Authorization: Bearer $TOKEN"
+
+# Фільтрація улюблених
+curl -X GET "http://localhost:3000/api/contacts?favorite=true" \
+  -H "Authorization: Bearer $TOKEN"
+
+# Завантаження аватара
+curl -X PATCH http://localhost:3000/api/auth/avatars \
+  -H "Authorization: Bearer $TOKEN" \
+  -F "avatar=@public/avatars/test-avatar.png"
+# Відповідь: { "avatarURL": "/avatars/user-X-nanoid.png" }
+
+# Перевірка статичного файлу (аватар)
+curl -I http://localhost:3000/avatars/user-X-nanoid.png
+# Очікується: 200 OK, Content-Type: image/png
+```
+
+---
+
+## ⚠️ Вирішення проблем
+
+### 🔴 "Порожній масив контактів `[]`"
+
+**Причина:** Новий користувач не має контактів.
 
 **Рішення:**
 
-1. Створіть контакти через `➕ Створити контакт`
-2. АБО увійдіть з користувачем після seed: `mail@andriy.pro` / `goit2025`
+1. Виконайте `npm run seed` для створення тестових даних
+2. АБО увійдіть як `mail@andriy.pro` / `goit2025`
+3. АБО створіть контакти через API (POST /api/contacts)
 
-### Помилка 401 Unauthorized
+### 🔴 "401 Unauthorized"
 
-**Проблема:** Токен не збережений або застарів.
+**Причина:** Відсутній або неправильний JWT токен.
 
 **Рішення:**
 
-1. Виконайте `🔑 Вхід користувача`
-2. Перевірте, що токен збережений у Environment
+1. Виконайте логін: `POST /api/auth/login`
+2. Скопіюйте `token` з відповіді
+3. Додайте заголовок: `Authorization: Bearer YOUR_TOKEN`
+4. В Postman перевірте що токен збережено в Environment
 
-### Тести не знаходять користувача
+### 🔴 "Avatar file is required (400)"
 
-**Проблема:** База даних порожня.
+**Причина:** У Postman не обрано файл для завантаження.
+
+**Рішення:**
+
+1. Відкрийте запит `⬆️ Оновити аватар` в Postman UI
+2. Вкладка **Body** → **form-data**
+3. Поле `avatar` → тип **File**
+4. Натисніть **Select Files**
+5. Оберіть файл: `public/avatars/test-avatar.png` з вашої файлової системи
+6. Натисніть **Send**
+
+**Примітка:** Collection Runner НЕ підтримує автоматичне прикріплення файлів -
+тільки ручний запуск!
+
+### 🔴 "Database connection error"
+
+**Причина:** PostgreSQL не запущений або неправильні налаштування.
+
+**Рішення:**
+
+1. Запустіть PostgreSQL:
+
+   ```bash
+   # Локально
+   sudo service postgresql start
+
+   # Або в Docker
+   docker run -d \
+     --name postgres \
+     -e POSTGRES_PASSWORD=your-password \
+     -e POSTGRES_DB=contacts_db \
+     -p 5432:5432 \
+     postgres:latest
+   ```
+
+2. Перевірте змінні середовища в `.env`:
+   - `DB_HOST`
+   - `DB_NAME`
+   - `DB_USER`
+   - `DB_PASSWORD`
+3. Перевірте підключення:
+   ```bash
+   psql -h localhost -U postgres -d contacts_db
+   ```
+
+### 🔴 "EADDRINUSE: address already in use"
+
+**Причина:** Порт 3000 вже зайнятий іншим процесом.
 
 **Рішення:**
 
 ```bash
-npm run seed
+# Знайти процес
+lsof -i :3000
+# або
+netstat -tuln | grep 3000
+
+# Зупинити процес
+kill -9 PID
+
+# Або змініть PORT у .env
+echo "PORT=3001" >> .env
 ```
 
-## 📚 Детальна документація
+---
 
-- [Seed скрипт](../src/db/seeders/README.md)
-- [Postman колекція (Topic 7)](postman-collection_topic-7.json)
-- [Postman колекція (Topic 9)](postman-collection_topic-9.json)
-- [Основний README](../README.md)
+## 📚 Додаткові ресурси
+
+### Документація проєкту
+
+| Файл                                                                | Опис                                |
+| ------------------------------------------------------------------- | ----------------------------------- |
+| [README.md](../README.md)                                           | Основне технічне завдання (Topic 9) |
+| [Seed README](../src/db/seeders/README.md)                          | Документація тестових даних         |
+| [Verification Guide](../.mdf/project/verification_guide_topic-9.md) | Покроковий гайд перевірки           |
+| [Postman Guide (Topic 9)](../.mdf/project/POSTMAN_GUIDE_topic-9.md) | Детальна інструкція для Postman     |
+
+### API Endpoints
+
+| Метод  | Endpoint                     | Опис                                 |
+| ------ | ---------------------------- | ------------------------------------ |
+| POST   | `/api/auth/register`         | Реєстрація нового користувача        |
+| POST   | `/api/auth/login`            | Логін (отримання JWT)                |
+| GET    | `/api/auth/current`          | Поточний користувач (потрібен токен) |
+| POST   | `/api/auth/logout`           | Вихід (видалення токену)             |
+| PATCH  | `/api/auth/subscription`     | Оновлення підписки                   |
+| PATCH  | `/api/auth/avatars`          | Завантаження аватара (Topic 9)       |
+| GET    | `/api/contacts`              | Список контактів (з пагінацією)      |
+| POST   | `/api/contacts`              | Створення контакту                   |
+| GET    | `/api/contacts/:id`          | Отримання контакту по ID             |
+| PUT    | `/api/contacts/:id`          | Оновлення контакту                   |
+| DELETE | `/api/contacts/:id`          | Видалення контакту                   |
+| PATCH  | `/api/contacts/:id/favorite` | Зміна статусу "улюблений"            |
