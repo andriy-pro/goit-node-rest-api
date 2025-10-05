@@ -33,8 +33,8 @@ const getDatabaseConfig = () => {
     }
   };
 
-  // SSL конфігурація для production та тестів (якщо DB_SSL=true)
-  if (isProduction || process.env.DB_SSL === 'true') {
+  // SSL конфігурація тільки якщо явно встановлено DB_SSL=true
+  if (process.env.DB_SSL === 'true') {
     config.dialectOptions = {
       ssl: {
         require: true,

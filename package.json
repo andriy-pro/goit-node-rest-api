@@ -26,7 +26,10 @@
     "lint": "eslint .",
     "test": "echo '⚠️  WARNING: Tests will DELETE ALL DATA in database! Use separate test DB.' && NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
     "test:coverage": "npm test -- --coverage --runInBand",
-    "seed": "node src/db/seeders/seed-data.js"
+    "seed": "node src/db/seeders/seed-data.js",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f api"
   },
   "dependencies": {
     "@sendgrid/mail": "^8.1.6",

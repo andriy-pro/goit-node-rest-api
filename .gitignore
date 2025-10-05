@@ -454,3 +454,15 @@ test-results/
 coverage.xml
 junit-*.xml
 *.lcov
+# ==========================================
+# DOCKER & TESTING SECRETS (CRITICAL!)
+# ==========================================
+
+# Docker environment files with real secrets
+.env.docker
+.env.docker.local
+.env.test
+
+# Any other environment files with secrets
+.env.*
+!.env.example

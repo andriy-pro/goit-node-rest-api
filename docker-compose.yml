@@ -1,0 +1,71 @@
+services:
+  # Node.js API сервіс - основний додаток
+  api:
+    build: .
+    ports:
+      - "3001:3000"  # Зовнішній порт 3001, внутрішній 3000
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - .env  # Скопіюйте з .env.docker.example або .env.example
+    depends_on:
+      postgres:
+        condition: service_healthy  # Чекаємо готовності PostgreSQL
+    restart: unless-stopped
+    networks:
+      - goit-network
+    # Обмеження ресурсів для стабільності
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  # PostgreSQL база даних - локальна БД для розробки/демонстрації
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      # УВАГА: Паролі беруться з .env файлу для безпеки
+      POSTGRES_DB: ${DB_NAME:-db-contacts}
+      POSTGRES_USER: ${DB_USER:-postgres}  
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-change_me_in_production}
+    # УВАГА: Порт 5433 відкритий для локальної розробки
+    # У production рекомендується прибрати або використовувати profiles
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - goit-network
+    # Перевірка здоров'я для надійного запуску
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-db-contacts}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Adminer - веб-інтерфейс для управління БД (тільки для розробки)
+  adminer:
+    image: adminer:latest
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - goit-network
+    # Профіль для опціонального запуску
+    profiles:
+      - debug
+      - development
+
+volumes:
+  postgres_data:
+
+networks:
+  goit-network:
+    driver: bridge

@@ -1,0 +1,32 @@
+# Залежності та кеш
+node_modules
+npm-debug.log
+.nyc_output
+coverage
+
+# Git та конфігурація
+.git
+.gitignore
+.eslintrc*
+jest.config.json
+
+# IDE та редактори
+.vscode/
+.idea/
+
+# Логи та тимчасові файли
+*.log
+temp/
+.DS_Store
+Thumbs.db
+
+# Документація та тести (не потрібні в production)
+docs/
+tests/
+*.md
+
+# КРИТИЧНО: Виключаємо ВСІ .env файли з секретами
+.env*
+# Дозволяємо тільки приклади без секретів
+!.env.example
+!.env.*.example
