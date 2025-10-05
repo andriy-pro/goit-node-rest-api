@@ -47,7 +47,7 @@ Repository for the homework solution from the GoIT course 'Fullstack. Back End D
 }
 ```
 
-**2.** Створити ендпоінт GET `/api/auth/verify/:verificationToken`, де по параметру `verificationToken` ми будемо шукати користувача в моделі `User`
+**2.** Створити ендпоінт GET `/auth/verify/:verificationToken`, де по параметру `verificationToken` ми будемо шукати користувача в моделі `User`
 
 - Якщо користувач з таким токеном не знайдений, необхідно повернути помилку 'Not Found'
 - Якщо користувач знайдений, встановлюємо `verificationToken` в `null`, а поле `verify` ставимо рівним `true` в документі користувача і повертаємо успішну відповідь
@@ -55,7 +55,7 @@ Repository for the homework solution from the GoIT course 'Fullstack. Back End D
 ### Запит на верифікацію (Verification request)
 
 ```
-GET /api/auth/verify/:verificationToken
+GET /auth/verify/:verificationToken
 ```
 
 ### Користувач не знайдений (Verification user Not Found)
@@ -83,7 +83,7 @@ ResponseBody: {
 При створення користувача при реєстрації:
 
 - Створити `verificationToken` для користувача і записати його в БД (для генерації токена використовуйте пакет [uuid](https://www.npmjs.com/package/uuid) або [nanoid](https://www.npmjs.com/package/nanoid))
-- Відправити email на пошту користувача і вказати посилання для верифікації email'а (`/api/auth/verify/:verificationToken`) в повідомленні
+- Відправити email на пошту користувача і вказати посилання для верифікації email'а (`/auth/verify/:verificationToken`) в повідомленні
 
 Так само необхідно враховувати, що тепер логін користувача не дозволено, якщо не верифікувано email
 
@@ -93,7 +93,7 @@ ResponseBody: {
 
 Необхідно передбачити, варіант, що користувач може випадково видалити лист. Воно може не дійти з якоїсь причини до адресата. Наш сервіс відправки листів під час реєстрації видав помилку і т.д.
 
-#### POST /api/auth/verify
+#### POST /auth/verify
 
 - Отримує `body` в форматі `{email}`
 - Якщо в `body` немає обов'язкового поля `email`, повертає json з ключем `{"message":"missing required field email"}` і статусом `400`
@@ -103,7 +103,7 @@ ResponseBody: {
 #### Запит на повторну відправку email (Resending an email request)
 
 ```
-POST /api/auth/verify
+POST /auth/verify
 Content-Type: application/json
 RequestBody: {
   "email": "example@example.com"
