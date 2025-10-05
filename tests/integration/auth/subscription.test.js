@@ -23,7 +23,7 @@ describe('User Subscription Update', () => {
     // Створюємо користувача для тестування
     const authData = await createAuthenticatedUser({
       email: 'test@example.com',
-      password: 'password123'
+      password: 'goit2025'
     });
     
 

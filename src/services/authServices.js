@@ -32,7 +32,7 @@ const { JWT_SECRET } = process.env;
  * @example
  * const user = await registerUser({
  *   email: 'user@example.com',
- *   password: 'password123'
+ *   password: 'goit2025'
  * });
  * console.log(user.email); // 'user@example.com'
  */
@@ -85,7 +85,7 @@ export const registerUser = async (userData) => {
  * @example
  * const result = await loginUser({
  *   email: 'user@example.com',
- *   password: 'password123'
+ *   password: 'goit2025'
  * });
  * console.log(result.token); // JWT токен
  * console.log(result.user.email); // 'user@example.com'

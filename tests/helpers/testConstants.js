@@ -13,7 +13,7 @@ import User from '../../src/models/User.js';
 export const createTestUser = async (overrides = {}) => {
   const userData = {
     email: `test-user-${Date.now()}@example.com`,
-    password: 'testpassword123',
+    password: 'goit2025-test',
     subscription: 'starter',
     verify: true, // Тестові користувачі верифіковані за замовчуванням
     verificationToken: null,
@@ -58,34 +58,34 @@ export const TEST_CONTACTS = {
     phone: '+380991112233',
     favorite: false
   },
-  
+
   MISSING_EMAIL: {
     name: 'Test',
     phone: '+380991234567'
   },
-  
+
   MISSING_PHONE: {
     name: 'Test',
     email: 'test@example.com'
   },
-  
+
   MISSING_NAME: {
     email: 'test@example.com',
     phone: '+380991234567'
   },
-  
+
   INVALID_EMAIL: {
     name: 'Test User',
     email: 'not-an-email',
     phone: '+380991234567'
   },
-  
+
   INVALID_PHONE_NO_PLUS: {
     name: 'Test User',
     email: 'test@example.com',
     phone: '0501234567' // без +
   },
-  
+
   INVALID_PHONE_TOO_SHORT: {
     name: 'Test User',
     email: 'test@example.com',
@@ -96,11 +96,11 @@ export const TEST_CONTACTS = {
 export const TEST_PHONE_NUMBERS = {
   VALID: [
     '+380671234567',
-    '+12125551234', 
+    '+12125551234',
     '+447123456789',
     '+4915123456789'
   ],
-  
+
   INVALID: [
     '(123) 456-7890',  // US format
     '0671234567',      // no country code
@@ -129,4 +129,4 @@ export const ERROR_MESSAGES = {
 // Utility функції для тестів
 export const createUniqueEmail = (prefix = 'test') => {
   return `${prefix}-${Date.now()}@example.com`;
-}; 
+};

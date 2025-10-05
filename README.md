@@ -159,3 +159,15 @@ npm test
 
 А ще **краще** :
 **ВИКОРИСТОВУЙТЕ ОКРЕМУ ТЕСТОВУ БАЗУ ДАНИХ!**
+
+
+---
+
+## 📚 Додаткові ресурси
+
+- [Документація Nodemailer](https://nodemailer.com/)
+- [Налаштування SMTP ukr.net](https://ukr.net)
+- [Найкращі практики JWT](https://jwt.io/)
+- [Документація Sequelize](https://sequelize.org/)
+
+---

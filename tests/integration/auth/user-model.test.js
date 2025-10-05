@@ -32,7 +32,7 @@ describe('User Model', () => {
     it('should create a user with required fields', async () => {
       const userData = {
         email: 'test@example.com',
-        password: 'password123',
+        password: 'goit2025',
         subscription: 'starter',
         verify: false, // Для тестування моделі можемо використати false
         verificationToken: 'test-token'
@@ -55,7 +55,7 @@ describe('User Model', () => {
     it('should set default subscription to "starter" when not provided', async () => {
       const userData = {
         email: 'test@example.com',
-        password: 'password123'
+        password: 'goit2025'
       };
 
       const user = await User.create(userData);
@@ -66,7 +66,7 @@ describe('User Model', () => {
     it('should set token to null by default', async () => {
       const userData = {
         email: 'test@example.com',
-        password: 'password123'
+        password: 'goit2025'
       };
 
       const user = await User.create(userData);
@@ -78,7 +78,7 @@ describe('User Model', () => {
   describe('User Model Validation', () => {
     it('should require email field', async () => {
       const userData = {
-        password: 'password123'
+        password: 'goit2025'
       };
 
       await expect(User.create(userData)).rejects.toThrow();
@@ -95,7 +95,7 @@ describe('User Model', () => {
     it('should validate email format', async () => {
       const userData = {
         email: 'invalid-email',
-        password: 'password123'
+        password: 'goit2025'
       };
 
       await expect(User.create(userData)).rejects.toThrow();
@@ -104,7 +104,7 @@ describe('User Model', () => {
     it('should validate subscription enum values', async () => {
       const userData = {
         email: 'test@example.com',
-        password: 'password123',
+        password: 'goit2025',
         subscription: 'invalid-subscription'
       };
 
@@ -117,7 +117,7 @@ describe('User Model', () => {
       for (const subscription of validSubscriptions) {
         const userData = {
           email: `test-${subscription}@example.com`,
-          password: 'password123',
+          password: 'goit2025',
           subscription
         };
 
@@ -131,7 +131,7 @@ describe('User Model', () => {
     it('should enforce unique email constraint', async () => {
       const userData = {
         email: 'test@example.com',
-        password: 'password123'
+        password: 'goit2025'
       };
 
       // Створюємо першого користувача
@@ -144,12 +144,12 @@ describe('User Model', () => {
     it('should allow different emails', async () => {
       const user1 = await User.create({
         email: 'user1@example.com',
-        password: 'password123'
+        password: 'goit2025'
       });
 
       const user2 = await User.create({
         email: 'user2@example.com',
-        password: 'password123'
+        password: 'goit2025'
       });
 
       expect(user1.email).not.toBe(user2.email);
@@ -161,7 +161,7 @@ describe('User Model', () => {
     it('should find user by email', async () => {
       const userData = {
         email: 'test@example.com',
-        password: 'password123'
+        password: 'goit2025'
       };
 
       await User.create(userData);
@@ -175,7 +175,7 @@ describe('User Model', () => {
     it('should update user token', async () => {
       const user = await User.create({
         email: 'test@example.com',
-        password: 'password123'
+        password: 'goit2025'
       });
 
       const newToken = 'new-jwt-token';
@@ -187,7 +187,7 @@ describe('User Model', () => {
     it('should remove user token', async () => {
       const user = await User.create({
         email: 'test@example.com',
-        password: 'password123',
+        password: 'goit2025',
         token: 'existing-token'
       });
 
@@ -202,7 +202,7 @@ describe('User Model', () => {
       // Цей тест буде реалізований після додавання owner поля до Contact моделі
       const user = await User.create({
         email: 'test@example.com',
-        password: 'password123'
+        password: 'goit2025'
       });
 
       expect(user).toBeDefined();

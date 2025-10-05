@@ -17,7 +17,7 @@ import bcrypt from 'bcrypt';
 describe('Login Controller Unit Tests (Додаткове завдання Теми 9)', () => {
   let testUser;
   const testEmail = 'unittest@example.com';
-  const testPassword = 'password123';
+  const testPassword = 'goit2025';
 
   beforeAll(async () => {
     // Синхронізуємо БД перед тестами

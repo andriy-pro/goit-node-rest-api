@@ -37,11 +37,11 @@ describe('Protected Contact Routes (Optimized)', () => {
     // Створюємо двох користувачів для тестування owner-based доступу
     const authData1 = await createAuthenticatedUser({
       email: 'user1@example.com',
-      password: 'password123'
+      password: 'goit2025'
     });
     const authData2 = await createAuthenticatedUser({
       email: 'user2@example.com',
-      password: 'password123'
+      password: 'goit2025'
     });
     
     user1 = authData1.user;
