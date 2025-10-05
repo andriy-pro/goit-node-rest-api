@@ -1,0 +1,540 @@
+{
+  "info": {
+    "name": "GoIT Node.js REST API - Topic 11: Email Verification",
+    "description": "Колекція для тестування функціоналу верифікації email з Nodemailer та ukr.net.\n\n⚠️ ВАЖЛИВО: Після імпорту колекції:\n1. Налаштуйте змінні середовища в .env:\n   - UKR_NET_EMAIL=your_email@ukr.net\n   - UKR_NET_PASSWORD=your_app_password\n   - BASE_URL=http://localhost:3000\n\n2. Запустіть спочатку запити з теки '🧰 Підготовка'\n3. Для верифікації email перевірте консоль сервера або email скриньку\n4. Скопіюйте verificationToken з БД або email листа\n\n📧 Процес верифікації:\n1. Реєстрація → отримання email\n2. Спроба логіну → помилка 'Email not verified'\n3. Верифікація через токен → успіх\n4. Логін після верифікації → успіх",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "goit-node-rest-api-topic-11"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000", "type": "string" },
+    { "key": "authToken", "value": "", "type": "string" },
+    { "key": "uniqueEmail", "value": "", "type": "string" },
+    { "key": "verificationToken", "value": "", "type": "string" },
+    { "key": "testPassword", "value": "goit2025", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "🧰 Підготовка",
+      "item": [
+        {
+          "name": "📝 Реєстрація з email верифікацією",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Генеруємо унікальний email для кожного запуску",
+                  "const ts = Date.now();",
+                  "const uniqueEmail = `test${ts}@example.com`;",
+                  "pm.environment.set('uniqueEmail', uniqueEmail);",
+                  "",
+                  "console.log('📧 Реєструємо користувача:', uniqueEmail);",
+                  "console.log('⚠️ Після реєстрації перевірте email або консоль сервера для отримання verificationToken');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Status 201 Created', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('✅ Response має user об\\'єкт', () => {",
+                  "  pm.expect(body).to.have.property('user');",
+                  "});",
+                  "",
+                  "pm.test('✅ User має email та subscription', () => {",
+                  "  pm.expect(body.user).to.have.property('email');",
+                  "  pm.expect(body.user).to.have.property('subscription');",
+                  "  pm.expect(body.user.email).to.equal(pm.environment.get('uniqueEmail'));",
+                  "});",
+                  "",
+                  "pm.test('❌ Response НЕ містить verificationToken', () => {",
+                  "  pm.expect(body.user).to.not.have.property('verificationToken');",
+                  "  pm.expect(body).to.not.have.property('verificationToken');",
+                  "});",
+                  "",
+                  "console.log('✅ Користувач зареєстрований:', body.user.email);",
+                  "console.log('📧 Перевірте email або консоль сервера для verificationToken');",
+                  "console.log('🔗 Або знайдіть токен в БД: SELECT verificationToken FROM \"Users\" WHERE email = \\'' + body.user.email + '\\';');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{uniqueEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🚫 Логін без верифікації (має падати)",
+      "item": [
+        {
+          "name": "❌ Спроба логіну неверифікованого користувача",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('❌ Status 401 Unauthorized', () => {",
+                  "  pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('❌ Повідомлення про неверифікований email', () => {",
+                  "  pm.expect(body.message).to.equal('Email not verified');",
+                  "});",
+                  "",
+                  "console.log('❌ Логін заблокований:', body.message);",
+                  "console.log('📧 Потрібна верифікація email перед логіном');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{uniqueEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📧 Email верифікація",
+      "item": [
+        {
+          "name": "✅ Верифікація email за токеном",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Перевіряємо чи встановлений verificationToken",
+                  "const token = pm.environment.get('verificationToken');",
+                  "if (!token) {",
+                  "  console.log('⚠️ УВАГА: verificationToken не встановлений!');",
+                  "  console.log('📧 Знайдіть токен в email листі або БД');",
+                  "  console.log('🔧 Встановіть змінну verificationToken в Environment');",
+                  "  console.log('💡 Або замініть {{verificationToken}} на реальний токен в URL');",
+                  "} else {",
+                  "  console.log('🔗 Верифікуємо токен:', token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Status 200 OK', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('✅ Повідомлення про успішну верифікацію', () => {",
+                  "  pm.expect(body.message).to.equal('Verification successful');",
+                  "});",
+                  "",
+                  "console.log('✅ Email верифіковано успішно!');",
+                  "console.log('🔓 Тепер можна логінитися');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/verify/{{verificationToken}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "verify", "{{verificationToken}}"]
+            }
+          }
+        },
+        {
+          "name": "❌ Повторна верифікація (має падати)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('❌ Status 404 Not Found', () => {",
+                  "  pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('❌ Користувач не знайдений (токен використаний)', () => {",
+                  "  pm.expect(body.message).to.equal('User not found');",
+                  "});",
+                  "",
+                  "console.log('❌ Токен вже використаний:', body.message);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/verify/{{verificationToken}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "verify", "{{verificationToken}}"]
+            }
+          }
+        },
+        {
+          "name": "❌ Неіснуючий токен",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('❌ Status 404 Not Found', () => {",
+                  "  pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('❌ Користувач не знайдений', () => {",
+                  "  pm.expect(body.message).to.equal('User not found');",
+                  "});",
+                  "",
+                  "console.log('❌ Неіснуючий токен:', body.message);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/verify/invalid-token-12345",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "verify", "invalid-token-12345"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔄 Повторна відправка email",
+      "item": [
+        {
+          "name": "📧 Повторна відправка для неверифікованого користувача",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Для цього тесту потрібен неверифікований користувач",
+                  "console.log('📧 Відправляємо email повторно для:', pm.environment.get('uniqueEmail'));",
+                  "console.log('⚠️ Цей запит спрацює тільки для неверифікованих користувачів');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Може бути 200 (успіх) або 400 (вже верифікований)",
+                  "if (pm.response.code === 200) {",
+                  "  pm.test('✅ Status 200 OK - Email відправлений', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "  });",
+                  "  ",
+                  "  const body = pm.response.json();",
+                  "  pm.test('✅ Повідомлення про відправку', () => {",
+                  "    pm.expect(body.message).to.equal('Verification email sent');",
+                  "  });",
+                  "  ",
+                  "  console.log('✅ Email відправлений повторно');",
+                  "  console.log('🔄 УВАГА: Сервер міг згенерувати НОВИЙ verificationToken!');",
+                  "  console.log('📋 Перевірте БД: SELECT verificationToken FROM \"Users\" WHERE email = \\'' + pm.environment.get('uniqueEmail') + '\\';');",
+                  "  console.log('🔧 Оновіть змінну verificationToken в Environment перед наступною верифікацією!');",
+                  "} else if (pm.response.code === 400) {",
+                  "  pm.test('⚠️ Status 400 - Користувач вже верифікований', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "  });",
+                  "  ",
+                  "  const body = pm.response.json();",
+                  "  pm.test('⚠️ Повідомлення про завершену верифікацію', () => {",
+                  "    pm.expect(body.message).to.equal('Verification has already been passed');",
+                  "  });",
+                  "  ",
+                  "  console.log('⚠️ Користувач вже верифікований');",
+                  "} else {",
+                  "  pm.test('❌ Неочікуваний статус', () => {",
+                  "    pm.expect.fail('Очікувався статус 200 або 400, отримано: ' + pm.response.code);",
+                  "  });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{uniqueEmail}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "verify"]
+            }
+          }
+        },
+        {
+          "name": "❌ Повторна відправка без email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('❌ Status 400 Bad Request', () => {",
+                  "  pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('❌ Помилка валідації email', () => {",
+                  "  pm.expect(body.message).to.match(/email/i);",
+                  "});",
+                  "",
+                  "console.log('❌ Валідація email:', body.message);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "verify"]
+            }
+          }
+        },
+        {
+          "name": "❌ Повторна відправка для неіснуючого користувача",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('❌ Status 404 Not Found', () => {",
+                  "  pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('❌ Користувач не знайдений', () => {",
+                  "  pm.expect(body.message).to.equal('User not found');",
+                  "});",
+                  "",
+                  "console.log('❌ Неіснуючий користувач:', body.message);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"nonexistent@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "verify"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "✅ Логін після верифікації",
+      "item": [
+        {
+          "name": "🔓 Успішний логін верифікованого користувача",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Status 200 OK', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('✅ Response має token та user', () => {",
+                  "  pm.expect(body).to.have.property('token');",
+                  "  pm.expect(body).to.have.property('user');",
+                  "});",
+                  "",
+                  "pm.test('✅ Token є валідним JWT', () => {",
+                  "  const tokenParts = body.token.split('.');",
+                  "  pm.expect(tokenParts).to.have.lengthOf(3);",
+                  "});",
+                  "",
+                  "pm.test('✅ User має правильну структуру', () => {",
+                  "  pm.expect(body.user).to.have.property('email');",
+                  "  pm.expect(body.user).to.have.property('subscription');",
+                  "  pm.expect(body.user.email).to.equal(pm.environment.get('uniqueEmail'));",
+                  "});",
+                  "",
+                  "// Зберігаємо токен для подальших запитів",
+                  "pm.environment.set('authToken', body.token);",
+                  "",
+                  "console.log('✅ Логін успішний для:', body.user.email);",
+                  "console.log('🔑 Token збережений для подальших запитів');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{uniqueEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "👤 Отримання поточного користувача",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Status 200 OK', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('✅ User має email та subscription', () => {",
+                  "  pm.expect(body).to.have.property('email');",
+                  "  pm.expect(body).to.have.property('subscription');",
+                  "  pm.expect(body.email).to.equal(pm.environment.get('uniqueEmail'));",
+                  "});",
+                  "",
+                  "console.log('✅ Поточний користувач:', body.email);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/current",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "current"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🧪 Додаткові тести",
+      "item": [
+        {
+          "name": "📊 Перевірка стану БД (опціонально)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "console.log('📊 Корисні SQL запити для перевірки:');",
+                  "console.log('👥 Всі користувачі: SELECT email, verify, verificationToken FROM \"Users\";');",
+                  "console.log('🔍 Конкретний користувач: SELECT * FROM \"Users\" WHERE email = \\'' + pm.environment.get('uniqueEmail') + '\\';');",
+                  "console.log('📧 Неверифіковані: SELECT email FROM \"Users\" WHERE verify = false;');",
+                  "console.log('✅ Верифіковані: SELECT email FROM \"Users\" WHERE verify = true;');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/current",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "current"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

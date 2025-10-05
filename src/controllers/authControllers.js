@@ -249,8 +249,16 @@ export const resendVerificationEmail = async (req, res, next) => {
       throw HttpError(400, "Verification has already been passed");
     }
 
-    // Відправити email повторно
-    await sendVerificationEmail(email, user.verificationToken);
+    // Перевірити та згенерувати новий токен якщо потрібно
+    let verificationToken = user.verificationToken;
+    if (!verificationToken) {
+      // Генеруємо новий токен якщо старий відсутній
+      verificationToken = nanoid();
+      await user.update({ verificationToken });
+    }
+
+    // Відправити email повторно з валідним токеном
+    await sendVerificationEmail(email, verificationToken);
 
     res.status(200).json({
       message: "Verification email sent",
