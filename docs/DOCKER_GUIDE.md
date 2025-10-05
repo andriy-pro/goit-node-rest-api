@@ -30,7 +30,7 @@
 
 ```bash
 # 1. Клонуйте репозиторій
-git clone <repository-url>
+git clone https://github.com/andriy-pro/goit-node-rest-api.git
 cd goit-node-rest-api
 
 # 2. Налаштуйте .env файл
@@ -39,7 +39,7 @@ cp .env.docker.example .env.docker
 # Відредагуйте .env.docker з вашими РЕАЛЬНИМИ налаштуваннями
 
 # 3. Зберіть та запустіть контейнер
-npm run docker:build
+npm run docker:up
 npm run docker:run
 ```
 
@@ -47,7 +47,7 @@ npm run docker:run
 
 ```bash
 # 1. Клонуйте репозиторій
-git clone <repository-url>
+git clone https://github.com/andriy-pro/goit-node-rest-api.git
 cd goit-node-rest-api
 
 # 2. Налаштуйте .env.docker файл
