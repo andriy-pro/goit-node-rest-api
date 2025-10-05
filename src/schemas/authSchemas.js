@@ -62,4 +62,16 @@ export const subscriptionSchema = Joi.object({
       'any.only': 'Subscription must be one of: starter, pro, business',
       'any.required': 'Subscription is a required field'
     })
-}); 
+});
+
+/**
+ * Схема валідації для повторної відправки email верифікації (POST /api/auth/verify)
+ * Email обов'язковий
+ */
+export const resendVerificationSchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    "string.email": "Please provide a valid email address",
+    "any.required": "missing required field email",
+    "string.empty": "missing required field email",
+  }),
+});

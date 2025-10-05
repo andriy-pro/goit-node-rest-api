@@ -197,4 +197,65 @@ export const updateSubscription = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-}; 
+};
+
+/**
+ * Верифікує email користувача за токеном
+ * GET /api/auth/verify/:verificationToken
+ */
+export const verifyEmail = async (req, res, next) => {
+  try {
+    const { verificationToken } = req.params;
+
+    // Знайти користувача за токеном
+    const user = await User.findOne({
+      where: { verificationToken },
+    });
+
+    if (!user) {
+      throw HttpError(404, "User not found");
+    }
+
+    // Оновити статус верифікації
+    await user.update({
+      verify: true,
+      verificationToken: null,
+    });
+
+    res.status(200).json({
+      message: "Verification successful",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Повторна відправка email верифікації
+ * POST /api/auth/verify
+ */
+export const resendVerificationEmail = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    // Знайти користувача
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      throw HttpError(404, "User not found");
+    }
+
+    // Перевірити, чи вже верифікований
+    if (user.verify) {
+      throw HttpError(400, "Verification has already been passed");
+    }
+
+    // Відправити email повторно
+    await sendVerificationEmail(email, user.verificationToken);
+
+    res.status(200).json({
+      message: "Verification email sent",
+    });
+  } catch (error) {
+    next(error);
+  }
+};

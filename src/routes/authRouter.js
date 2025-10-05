@@ -12,13 +12,15 @@
 import express from 'express';
 import validateBody from '../helpers/validateBody.js';
 import authenticateToken from '../middlewares/authenticateToken.js';
-import { registerSchema, loginSchema, subscriptionSchema } from '../schemas/authSchemas.js';
+import { registerSchema, loginSchema, subscriptionSchema, resendVerificationSchema } from '../schemas/authSchemas.js';
 import {
   register,
   login,
   logout,
   getCurrentUser,
-  updateSubscription
+  updateSubscription,
+  verifyEmail,
+  resendVerificationEmail
 } from '../controllers/authControllers.js';
 import { updateAvatar } from '../controllers/avatarController.js';
 import upload from '../middlewares/upload.js';
@@ -81,4 +83,24 @@ router.patch(
   updateAvatar
 );
 
-export default router; 
+/**
+ * GET /api/auth/verify/:verificationToken
+ * Верифікація email користувача
+ * Params: verificationToken
+ * Response: { message: "Verification successful" }
+ */
+router.get("/verify/:verificationToken", verifyEmail);
+
+/**
+ * POST /api/auth/verify
+ * Повторна відправка email верифікації
+ * Body: { email }
+ * Response: { message: "Verification email sent" }
+ */
+router.post(
+  "/verify",
+  validateBody(resendVerificationSchema),
+  resendVerificationEmail
+);
+
+export default router;
