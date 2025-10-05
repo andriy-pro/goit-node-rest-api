@@ -11,9 +11,11 @@
 
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { nanoid } from 'nanoid';
 import { User } from '../models/index.js';
 import HttpError from '../helpers/HttpError.js';
 import { getGravatarUrl } from '../helpers/gravatar.js';
+import { sendVerificationEmail, EmailServiceError } from '../services/emailService.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
@@ -38,16 +40,33 @@ export const register = async (req, res, next) => {
     // Генеруємо Gravatar URL для користувача
     const avatarURL = getGravatarUrl(email);
 
+    // Генерація токена верифікації
+    const verificationToken = nanoid();
+
     // Створюємо нового користувача
     const user = await User.create({
       email,
       password: hashedPassword,
       subscription: 'starter', // значення за замовчуванням
-      avatarURL // зберігаємо Gravatar URL
+      avatarURL, // зберігаємо Gravatar URL
+      verificationToken,
+      verify: false, // явно встановлюємо false
     });
 
-    // Повертаємо дані користувача (без пароля, токена та avatarURL)
-    // ВАЖЛИВО: avatarURL НЕ включаємо у відповідь - тести перевіряють точну структуру!
+    // Відправка email верифікації
+    try {
+      await sendVerificationEmail(email, verificationToken);
+    } catch (emailError) {
+      console.error("Email sending failed:", emailError);
+      // НЕ кидаємо помилку - користувач створений, email можна відправити пізніше
+      // Логуємо детальну інформацію для відлагодження
+      if (emailError instanceof EmailServiceError) {
+        console.error("Nodemailer details:", emailError.originalError);
+      }
+    }
+
+    // ВАЖЛИВО: НЕ включати verificationToken у відповідь!
+    // Тести перевіряють, що відповідь містить тільки email та subscription
     res.status(201).json({
       user: {
         email: user.email,
@@ -73,10 +92,15 @@ export const login = async (req, res, next) => {
       throw HttpError(401, 'Email or password is wrong');
     }
 
-    // Перевіряємо пароль
+    // Перевіряємо пароль спочатку (безпека)
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       throw HttpError(401, 'Email or password is wrong');
+    }
+
+    // Перевіряємо верифікацію email
+    if (!user.verify) {
+      throw HttpError(401, 'Email not verified');
     }
 
     // Генеруємо JWT токен

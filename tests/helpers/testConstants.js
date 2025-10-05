@@ -15,6 +15,8 @@ export const createTestUser = async (overrides = {}) => {
     email: `test-user-${Date.now()}@example.com`,
     password: 'testpassword123',
     subscription: 'starter',
+    verify: true, // Тестові користувачі верифіковані за замовчуванням
+    verificationToken: null,
     ...overrides,
   };
   return await User.create(userData);

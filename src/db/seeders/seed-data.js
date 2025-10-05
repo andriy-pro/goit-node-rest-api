@@ -106,7 +106,9 @@ async function createUsers() {
     email: andriyEmail,
     password: hashedPassword,
     subscription: 'pro',
-    avatarURL: getGravatarUrl(andriyEmail)
+    avatarURL: getGravatarUrl(andriyEmail),
+    verify: true, // Тестові користувачі верифіковані
+    verificationToken: null // Верифіковані користувачі не мають токена
   });
   users.push(andriyUser);
   console.log(
@@ -120,7 +122,9 @@ async function createUsers() {
       email,
       password: hashedPassword,
       subscription: generateSubscription(i),
-      avatarURL: getGravatarUrl(email)
+      avatarURL: getGravatarUrl(email),
+      verify: true, // Тестові користувачі верифіковані
+      verificationToken: null
     });
     users.push(user);
     console.log(

@@ -33,7 +33,9 @@ describe('Login Controller Unit Tests (Додаткове завдання Те�
     testUser = await User.create({
       email: testEmail,
       password: hashedPassword,
-      subscription: 'starter'
+      subscription: 'starter',
+      verify: true, // Тестовий користувач верифікований
+      verificationToken: null
     });
   });
 

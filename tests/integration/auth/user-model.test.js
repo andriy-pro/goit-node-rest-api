@@ -33,7 +33,9 @@ describe('User Model', () => {
       const userData = {
         email: 'test@example.com',
         password: 'password123',
-        subscription: 'starter'
+        subscription: 'starter',
+        verify: false, // Для тестування моделі можемо використати false
+        verificationToken: 'test-token'
       };
 
       const user = await User.create(userData);
@@ -44,6 +46,8 @@ describe('User Model', () => {
       expect(user.password).toBe(userData.password); // Поки що без хешування
       expect(user.subscription).toBe(userData.subscription);
       expect(user.token).toBeNull();
+      expect(user.verify).toBe(false);
+      expect(user.verificationToken).toBe('test-token');
       expect(user.createdAt).toBeDefined();
       expect(user.updatedAt).toBeDefined();
     });

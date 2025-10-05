@@ -11,6 +11,7 @@
 
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { nanoid } from 'nanoid';
 import { User } from '../models/index.js';
 import HttpError from '../helpers/HttpError.js';
 
@@ -48,16 +49,25 @@ export const registerUser = async (userData) => {
   const saltRounds = 10;
   const hashedPassword = await bcrypt.hash(password, saltRounds);
 
+  // Генеруємо токен верифікації
+  const verificationToken = nanoid();
+
   // Створюємо користувача
   const user = await User.create({
     email,
     password: hashedPassword,
-    subscription: 'starter' // значення за замовчуванням
+    subscription: 'starter',
+    verify: false,
+    verificationToken
   });
 
-  // Повертаємо користувача без пароля
-  const { password: _, ...userWithoutPassword } = user.toJSON();
-  return userWithoutPassword;
+  // ВАЖЛИВО: authServices.registerUser НЕ відправляє email
+  // Це внутрішня функція для створення користувача
+  // Email відправляється в контролері register
+
+  // Повертаємо користувача без пароля та токена
+  const { password: _, verificationToken: __, ...userWithoutSensitiveData } = user.toJSON();
+  return userWithoutSensitiveData;
 };
 
 /**
@@ -95,6 +105,11 @@ export const loginUser = async (userData) => {
     throw HttpError(401, 'Email or password is wrong');
   }
 
+  // Перевіряємо верифікацію
+  if (!user.verify) {
+    throw HttpError(401, 'Email not verified');
+  }
+
   // Створюємо JWT токен
   const payload = {
     id: user.id,
@@ -105,11 +120,11 @@ export const loginUser = async (userData) => {
   // Зберігаємо токен в базі даних
   await user.update({ token });
 
-  // Повертаємо токен та дані користувача без пароля
-  const { password: _, ...userWithoutPassword } = user.toJSON();
+  // Повертаємо токен та дані користувача без чутливих даних
+  const { password: _, verificationToken: __, ...userWithoutSensitiveData } = user.toJSON();
   return {
     token,
-    user: userWithoutPassword
+    user: userWithoutSensitiveData
   };
 };
 
@@ -158,9 +173,9 @@ export const getCurrentUser = async (userId) => {
     throw HttpError(401, 'Not authorized');
   }
 
-  // Повертаємо користувача без пароля
-  const { password: _, ...userWithoutPassword } = user.toJSON();
-  return userWithoutPassword;
+  // Повертаємо користувача без чутливих даних
+  const { password: _, verificationToken: __, ...userWithoutSensitiveData } = user.toJSON();
+  return userWithoutSensitiveData;
 };
 
 /**
@@ -187,7 +202,7 @@ export const updateUserSubscription = async (userId, subscription) => {
   // Оновлюємо підписку
   await user.update({ subscription });
 
-  // Повертаємо користувача без пароля
-  const { password: _, ...userWithoutPassword } = user.toJSON();
-  return userWithoutPassword;
+  // Повертаємо користувача без чутливих даних
+  const { password: _, verificationToken: __, ...userWithoutSensitiveData } = user.toJSON();
+  return userWithoutSensitiveData;
 }; 

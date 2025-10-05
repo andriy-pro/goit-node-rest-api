@@ -25,6 +25,8 @@ export const createTestUser = async (options = {}) => {
     email = `test-${Date.now()}@example.com`,
     password = 'testpassword',
     subscription = 'starter',
+    verify = true, // За замовчуванням тестові користувачі верифіковані
+    verificationToken = null, // Верифіковані користувачі не мають токена
     rounds = 1 // Швидше для тестів
   } = options;
 
@@ -33,7 +35,9 @@ export const createTestUser = async (options = {}) => {
   return await User.create({
     email,
     password: hashedPassword,
-    subscription
+    subscription,
+    verify,
+    verificationToken
   });
 };
 
@@ -58,6 +62,21 @@ export const createAuthToken = (user, options = {}) => {
     JWT_SECRET,
     { expiresIn }
   );
+};
+
+/**
+ * Створює неверифікованого тестового користувача
+ * @param {Object} options - Опції для створення користувача
+ * @returns {Promise<User>} Створений неверифікований користувач
+ */
+export const createUnverifiedTestUser = async (options = {}) => {
+  const { nanoid } = await import('nanoid');
+  
+  return await createTestUser({
+    ...options,
+    verify: false,
+    verificationToken: nanoid()
+  });
 };
 
 /**
