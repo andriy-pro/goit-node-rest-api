@@ -28,7 +28,7 @@ services:
     environment:
       # УВАГА: Паролі беруться з .env файлу для безпеки
       POSTGRES_DB: ${DB_NAME:-db-contacts}
-      POSTGRES_USER: ${DB_USER:-postgres}  
+      POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-change_me_in_production}
     # УВАГА: Порт 5433 відкритий для локальної розробки
     # У production рекомендується прибрати або використовувати profiles
